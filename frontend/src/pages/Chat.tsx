@@ -5,8 +5,10 @@ import { ChatBubble, TypingIndicator } from '../components/ChatBubble';
 import { CrisisCard } from '../components/CrisisCard';
 import { HelpSheet, useDial } from '../components/HelpSheet';
 import { Icon } from '../components/Icon';
+import { JOURNAL_QUERY, JournalForm, todayWib } from '../components/JournalForm';
 import { DjiwaAvatar } from '../components/Logo';
 import { FollowupCard, ScreeningCard } from '../components/ScreeningCard';
+import { Sheet } from '../components/Sheet';
 import { TelegramSheet } from '../components/TelegramSheet';
 import { useToast } from '../components/Toast';
 import { ApiError, api } from '../lib/api';
@@ -14,6 +16,7 @@ import { copy } from '../lib/copy';
 import type { ChatAction, ChatTurn, History, Me, MessageKind, ScreeningQuestion, Sender } from '../lib/types';
 
 const t = copy.chat;
+const stay = () => {}; // popup jurnal tidak bisa ditutup (Esc / klik luar)
 const COLUMN = 'mx-auto flex w-full max-w-820';
 const CHIP = 'h-40 flex-none rounded-full border-1.5 border-teal-200 bg-white px-14 text-14 font-semibold hover:bg-teal-100';
 
@@ -108,6 +111,11 @@ export function Chat({ me }: { me: Me }) {
   };
 
   const hotlines = history.data?.hotlines ?? [];
+  // Wajib isi jurnal hari ini sebelum chat (keputusan 2026-10-06). Demi keselamatan: gagal memuat
+  // jurnal tidak memblokir, sudah minta pendamping tidak diblokir, dan "Butuh bantuan sekarang"
+  // tetap bisa dibuka dari popup (popup disembunyikan selama sheet lain terbuka).
+  const journal = useQuery(JOURNAL_QUERY);
+  const needJournal = journal.data !== undefined && !journal.data.some((e) => e.entry_date === todayWib()) && !connected;
   return (
     // Penyimpangan desain (disetujui 2026-10-06): header, area pesan, dan kolom ketik selebar layar
     // supaya di desktop bisa scroll dari mana saja; isinya tetap kolom 820px seperti desain.
@@ -236,6 +244,25 @@ export function Chat({ me }: { me: Me }) {
         onCall={dial}
         onConnect={connect}
       />
+      <Sheet open={needJournal && sheet === null} onClose={stay} labelledBy="jgate-title">
+        <div className="flex flex-col gap-16 px-20 pb-24 pt-20">
+          <div className="flex flex-col gap-6">
+            <div id="jgate-title" className="text-20 font-extrabold leading-125">
+              {copy.jurnal.title}
+            </div>
+            <p className="m-0 text-14 leading-150 text-muted">{t.journalGate}</p>
+          </div>
+          <JournalForm onSaved={(res) => res.help && setSheet('help')} />
+          <button
+            type="button"
+            onClick={() => setSheet('help')}
+            className="flex h-44 items-center justify-center gap-6 rounded-full bg-peach-100 px-14 text-13 font-bold text-peach-800 hover:bg-peach-200"
+          >
+            <Icon name="phone" className="h-16 w-16 stroke-peach-600" strokeWidth={2} />
+            {t.help}
+          </button>
+        </div>
+      </Sheet>
       <TelegramSheet open={sheet === 'tg'} onClose={() => setSheet(null)} />
       <BreathingSheet open={sheet === 'napas'} onClose={() => setSheet(null)} />
     </div>

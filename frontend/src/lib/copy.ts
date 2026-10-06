@@ -59,6 +59,8 @@ export const copy = {
     typing: 'lagi ngetik…',
     typingLong: 'Djiwa lagi ngetik…',
     help: 'Butuh bantuan sekarang',
+    // DESIGN-GAP: popup wajib isi jurnal sebelum chat (keputusan 2026-10-06) tidak ada di desain.
+    journalGate: 'Isi jurnal hari ini dulu ya, habis itu kita lanjut ngobrol. Cuma sekali sehari kok.',
     telegram: 'Telegram',
     today: 'Hari ini',
     inputLabel: 'Tulis pesan',
