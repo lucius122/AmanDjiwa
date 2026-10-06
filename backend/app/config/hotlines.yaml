@@ -1,0 +1,11 @@
+# Nomor layanan bantuan (CLAUDE.md §6.6). SATU-SATUNYA sumber nomor telepon di sistem.
+# JANGAN mengarang nomor. Semua TODO_VERIFY sampai diverifikasi tim dari sumber resmi.
+hotlines:
+  - id: darurat
+    label: Layanan darurat
+    number: TODO_VERIFY
+    note: gratis, 24 jam # teks dari desain; klaim ini ikut diverifikasi
+  - id: kesehatan_jiwa
+    label: Layanan kesehatan jiwa
+    number: TODO_VERIFY
+    note: ""

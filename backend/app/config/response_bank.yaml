@@ -1,0 +1,65 @@
+# Bank respons Djiwa (CLAUDE.md §6.3). Level kuning/oranye/merah HANYA memakai teks dari sini.
+# DRAF: teks diambil dari copywriting prototipe di design/; yang tidak ada di desain ditandai
+# DESIGN-GAP. TODO_VERIFY: SEMUA teks wajib divalidasi psikolog sebelum rilis.
+# Dilarang memuat label level, skor, atau kata "berisiko" (§6.7) — dicek otomatis oleh tes.
+# Placeholder: {nama} (nama samaran), {kelurahan}.
+# Setiap perubahan wajib lolos: uv run pytest tests/test_crisis.py
+
+# Dipakai kalau seluruh pipeline gagal (§6.2). DESIGN-GAP: tidak ada di desain.
+fallback_safe:
+  - Maaf, aku lagi susah nyambung sebentar. Kalau kamu butuh bantuan sekarang, kamu bisa langsung hubungi salah satu layanan di bawah ini, atau minta aku hubungkan ke kakak pendamping.
+
+merah:
+  messages:
+    - Makasih udah mau cerita ke aku, {nama}. Itu butuh keberanian.
+  card:
+    title: Kamu nggak harus hadapi ini sendirian
+    body: Yang kamu rasain sekarang penting. Ada orang yang siap nemenin kamu, sekarang juga.
+    call_label: Telepon layanan darurat
+    connect_label: Hubungkan aku ke pendamping
+    connect_sub: Kakak di {kelurahan}, biasanya < 15 menit
+    footer: Aku tetap di sini kalau kamu mau terus ngobrol.
+
+oranye:
+  - Makasih udah jujur, {nama}. Kayaknya belakangan ini cukup berat buat kamu. Kalau kamu mau, aku bisa hubungkan ke kakak pendamping di {kelurahan}.
+  # DESIGN-GAP: variasi kedua tidak ada di desain.
+  - Kedengarannya ini berat banget buat kamu. Kamu nggak harus nanggung sendirian. Kalau kamu mau, aku bisa hubungkan ke kakak pendamping di {kelurahan}.
+
+kuning:
+  cemas: Makasih udah bilang. Cemas itu sinyal badan lagi waspada. Mau coba latihan napas 1 menit bareng aku? Ketik "napas" atau pilih tombol di bawah.
+  # DESIGN-GAP: balasan "sedih" tidak ada di desain.
+  sedih: Makasih udah cerita. Kedengarannya kamu lagi sedih banget. Mau cerita lebih lanjut, atau coba isi jurnal emosi biar kamu bisa lihat perubahannya?
+  default: Makasih udah jujur. Ada beberapa hal yang lagi berat buat kamu. Mau coba isi jurnal emosi atau latihan napas?
+
+hijau:
+  # Dicek berurutan; yang pertama cocok dipakai (urutan sama dengan prototipe).
+  keywords:
+    capek: [capek, lelah]
+    cemas: [cemas, takut, khawatir, deg degan, panik]
+    akademik: [tugas, ulangan, ujian, sekolah, nilai, pr]
+    cerita: [cerita]
+  replies:
+    capek: Kedengarannya berat ya. Wajar kok kalau capek. Mau cerita apa yang paling bikin capek?
+    cemas: Makasih udah bilang. Cemas itu sinyal badan lagi waspada. Mau coba latihan napas 1 menit bareng aku? Ketik "napas" atau pilih tombol di bawah.
+    akademik: Tugas sama ulangan numpuk emang bikin pusing. Kalau dipecah jadi bagian kecil, mana yang mau kamu kerjain duluan?
+    cerita: Boleh banget. Aku dengerin. Mulai dari mana aja yang kamu mau.
+  default:
+    - Aku dengerin kok. Terus gimana?
+    - Makasih udah cerita. Kamu ngerasa gimana soal itu?
+    - Itu nggak gampang. Biasanya apa yang bikin kamu sedikit lebih tenang?
+
+# DESIGN-GAP: tidak ada di desain.
+rate_limited: Pelan-pelan ya, aku masih baca pesanmu sebelumnya.
+
+# Alur dialog (dialog/). Teks dari desain; data dummy "Kak Dimas" diganti "Kakak pendamping".
+dialog:
+  napas: Yuk, kita latihan napas bareng. Aku bukain ya.
+  # Dikirim saat pendamping menekan "Sudah dihubungi" (teks desain; "Kak Dimas" → nama pendamping).
+  pendamping_greeting: Hai {nama}, aku {pendamping}, pendamping di {kelurahan}. Makasih udah berani cerita. Aku di sini buat dengerin. Kamu lagi di tempat yang aman sekarang?
+  # DESIGN-GAP: desain hanya punya versi pendamping; versi konselor (lintas kelurahan).
+  konselor_greeting: Hai {nama}, aku {pendamping}, konselor AmanDjiwa. Makasih udah berani cerita. Aku di sini buat dengerin. Kamu lagi di tempat yang aman sekarang?
+  connect_ack: Oke, aku udah kabarin kakak pendamping di {kelurahan}. Kakak pendamping bakal nyapa kamu di sini. Sambil nunggu, aku tetap nemenin.
+  # Intent hanya berlaku saat pesan berlevel hijau; krisis selalu didahulukan.
+  intents:
+    skrining: [skrining, cek perasaan]
+    napas: [napas, nafas]

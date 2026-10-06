@@ -1,0 +1,14 @@
+# Fallback klasifikasi emosi selama model IndoBERTweet belum ada (keputusan 2026-10-05).
+# Kata dalam bentuk baku (setelah normalize.yaml). Label = label model (CLAUDE.md §3 ML).
+sedih: [sedih, nangis, menangis, galau, kecewa, hancur, patah hati, sakit hati, murung, kesepian,
+        sendirian, hampa, kosong, terpuruk, down, nyesek, pilu, duka, merana, nelangsa, kangen,
+        emo_nangis, emo_sedih, emo_patah_hati]
+cemas: [cemas, khawatir, kuatir, takut, panik, gelisah, deg degan, overthinking, was was, gugup,
+        tegang, stres, stress, gemetar, gemeteran, wedi, insecure, emo_cemas]
+marah: [marah, kesal, sebel, sebal, benci, muak, emosi, jengkel, dongkol, geram, bete, nesu,
+        mangkel, emo_marah]
+malu_bersalah: [malu, bersalah, menyesal, minder, gagal, bodoh, tolol, aib, isin, sungkan,
+                salahku, maafin aku]
+senang: [senang, seneng, bahagia, happy, gembira, lega, bersyukur, syukur, asik, seru, mantap,
+         keren, ketawa, ngakak, excited, bungah, emo_senang, emo_ketawa]
+intensifiers: [banget, sangat, parah, sekali, pol, bener benar, poll]

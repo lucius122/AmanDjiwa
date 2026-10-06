@@ -1,0 +1,157 @@
+# Leksikon detektor krisis (CLAUDE.md §6.1). Dicocokkan ke teks kanonik hasil normalize.py,
+# jadi tulis dalam kata BAKU (slang & Jawa sudah dipetakan di normalize.yaml).
+# Sintaks: spasi = batas kata, (a|b) = alternatif, `...` = boleh diselingi 0–3 kata.
+# Prinsip: recall dulu. Salah tangkap lebih aman daripada kelewatan.
+# TODO_VERIFY: perlu direview psikolog/konselor sebelum rilis.
+# SETIAP perubahan wajib lolos: uv run pytest tests/test_crisis.py
+
+categories:
+  ide_bunuh_diri:
+    - bunuh diri
+    - suicide
+    - suicidal
+    - unalive
+    - kms
+    - kill myself
+    - end my life
+    - (want|wanna) (to )?die
+    - dont want to live
+    # keinginan untuk tidak ada (berbasis konsep: kata keinginan + kata "tiada")
+    - (ingin|mau|lebih baik|siap) ... (mati|hilang|tidak ada|udahan|pergi selamanya|tertabrak)
+    - tidak (ingin|mau) ada (di dunia|lagi)
+    - tidak (bakal|akan) ada (lagi|besok)
+    - pergi (saja |aja )?(selamanya|dari dunia)
+    - (akhiri|udahan|berhenti) ... (hidup|nyawa)
+    - akhiri ... (semua|semuanya)
+    - mati saja
+    - kalau aku mati
+    - hilang (saja|selamanya|dari dunia|dari muka bumi|dari bumi)
+    - tidak (ingin|mau) hidup
+    - (malas|capek|lelah|bosan|kesel|muak|benci) (hidup|dengan hidup|sama hidup)
+    - percuma (aku )?hidup
+    - (menyesal|nyesal) ... (hidup|lahir|dilahirkan)
+    - hidup ... tidak worth
+    - aku (sudah )?tidak (ada|hidup) (besok|lagi|selamanya)
+    - takut (sama |dengan |pada )?diri
+    - berhenti (hidup|jadi manusia|bernapas|ada)
+    - (besok|nanti|malam ini|sebentar lagi) aku (sudah )?tidak ada (lagi|kok|ya|di dunia|di sini|selamanya)
+    - tidak (bakal|akan) (lihat|ketemu|bertemu|dengar) aku lagi
+    # hidup tak bermakna / beban (perceived burdensomeness)
+    - tidak ada (gunanya|artinya|alasan) ... (aku|hidup)
+    - hidup (aku |ini )?tidak ada (gunanya|artinya|harapan)
+    - (buat|untuk) apa (aku )?hidup
+    - tidak (pantas|layak) hidup
+    - aku ... (jadi|menjadi|cuma|hanya|cuman) (beban|menyusahkan)
+    - lebih (baik|bahagia|tenang|damai) ... (tanpa aku|tanpa diriku|kalau aku tidak ada|kalau sudah tidak ada|kalau aku mati|kalau aku hilang|kalau aku pergi)
+    - tidak ada yang ... (kalau|jika) aku (pergi|mati|hilang|tidak ada)
+    # tidak ingin bangun
+    - (tidak|tak) (ingin|mau) bangun (lagi|besok)
+    - tidak bangun (lagi|bangun|selamanya)
+    - tidur selamanya
+    - (ingin|mau) menyusul
+    # tidak sanggup lagi / menyerah
+    - sudah tidak (kuat|sanggup|tahan)
+    - tidak (kuat|sanggup|tahan) lagi
+    - tidak (kuat|sanggup) (hidup|jalani hidup|menjalani hidup)
+    - (sudah|ingin|mau) menyerah
+    - menyerah (dengan |sama |pada )?(hidup|semuanya|semua)
+
+  perpisahan_atau_rencana:
+    - selamat tinggal
+    - pamit (selamanya|untuk selamanya|dari dunia)
+    - (ingin|mau|siap) pergi selamanya
+    - pesan terakhir
+    - terakhir kali aku (chat|ngobrol|bicara|ngomong|nulis|pamit|di sini)
+    - surat (wasiat|perpisahan|terakhir)
+    - gantung diri
+    - (lompat|tabrakkan) ... (jembatan|gedung|atap|lantai|tebing|apartemen|rel|truk|kereta|mobil|sungai|laut|kali|jurang|waduk|sumur)
+    - tabrakkan diri
+    - (minum|telan|nenggak) ... (racun|obat nyamuk|semua obat|obat banyak|pil banyak)
+    - (minum|telan|nenggak) (obat|pil) (sebanyak|banyak|sekaligus|semua|sebotol|segenggam)
+    - (minum|telan|nenggak) ... (cairan pembersih|pembersih lantai|pemutih|bayclin|deterjen|obat serangga|racun tikus|spiritus|bensin)
+    - (ingin|mau) ... (racun|overdosis)
+    - overdosis
+    - (siapin|siapkan|sediain|sediakan|kumpulin|kumpulkan|timbun) ... (tali|racun|obat|pil|silet)
+    - (potong|iris|sayat|silet) (nadi|pergelangan)
+
+  menyakiti_diri:
+    - (self harm|selfharm)
+    - cutting
+    - nyilet
+    - nyayat
+    - (melukai|menyakiti) (diri|diriku|badan|badanku|tubuh|tubuhku)
+    - (silet|sayat|iris|pisau|cutter) ... (tangan|tanganku|lengan|lenganku|paha|pahaku|nadi|kulit|diri|diriku|badan)
+    - (tangan|lengan|paha) ... (silet|sayat)
+    - (luka|bekas) (silet|sayat|sayatan)
+    - (jedotin|benturin|bentur|pukul|pukulin|mukul|tonjok|hajar|siksa) (kepala|diri|badan)
+    - bakar (tangan|kulit|diri)
+    - (gores|tusuk|cakar) ... (tangan|lengan|paha|kulit|nadi|badan|diri)
+
+  bahaya_dari_orang_lain:
+    - (dipukul|dipukulin|ditampar|ditendang|dicambuk|ditonjok) ... (ayah|ibu|bapak|mama|papa|orang tua|kakak|om|paman|tante|pacar|guru|tiap hari|setiap hari|terus)
+    - disiksa
+    - dianiaya
+    - (dilecehkan|dilecehin|dicabuli|diperkosa|pelecehan)
+    - dipaksa (berhubungan|gituan|tidur bareng|buka baju)
+    - diraba
+    - (dipegang|diraba|disentuh|dicium|dipeluk) ... paksa
+    - paksa ... (dipegang|diraba|disentuh|dicium)
+    - masuk kamar ... (pegang|raba|grepe|sentuh|cium)
+    - (digrepe|grepe)
+    - foto (telanjang|bugil)
+    - (dipaksa|diancam) ... (telanjang|bugil|buka baju|foto|video|vc|berhubungan|gituan)
+    - (diancam|ngancam|mengancam) ... (bunuh|sebar|sebarin|disebar)
+
+# Kombinasi konsep di tingkat PESAN (bukan frasa berdempetan): aturan terpicu kalau setiap
+# konsep di `all` muncul di mana saja dalam pesan. Jauh lebih umum daripada pola frasa,
+# jadi menangkap parafrase baru ("andai aku nggak pernah lahir", "i want everything to end").
+concepts:
+  keinginan: [ingin, mau, andai, seandainya, kepikiran, berpikir, siap, lebih baik, biar, semoga aku, want, wish, wana]
+  ketiadaan:
+    - mati
+    - meninggal
+    - nyawa
+    - tidak pernah lahir
+    - tidak (usah|perlu) bangun
+    - tidak ada lagi
+    - (semua|semuanya|hidup|hidupku) selesai
+    - selesai (semua|semuanya)
+    - selamanya
+    - akhiri
+    - (tengelam|tenggelam)
+    - (end|die|dead|gone|disappear)
+  metode: [cara, caranya, rencana, rencananya, plan]
+  kepergian: [pergi, mati, hilang, akhiri, bunuh, selesai, nyawa]
+  putus_asa: [tidak ada harapan, percuma, sia sia, putus asa, hopeles]
+  diri_tiada:
+    - aku (sudah )?tidak ada
+    - aku (mati|hilang|pergi selamanya)
+    - tanpa aku
+  aku_pergi:
+    - aku (pergi|mati|hilang)
+    - aku (sudah )?tidak ada
+  kelegaan: [selesai, lega, bahagia, tenang, lebih baik, beres, damai]
+  pesan_titip: [tolong (jagain|jaga|rawat|urus), titip]
+rules:
+  - {category: ide_bunuh_diri, all: [keinginan, ketiadaan]}
+  - {category: perpisahan_atau_rencana, all: [metode, kepergian]}
+  - {category: ide_bunuh_diri, all: [putus_asa, kepergian]}
+  - {category: ide_bunuh_diri, all: [diri_tiada, kelegaan]}
+  - {category: perpisahan_atau_rencana, all: [aku_pergi, pesan_titip]}
+
+# Ungkapan sehari-hari yang mengandung kata pemicu tapi bukan krisis. Hanya potongan ini yang
+# dibuang sebelum dicocokkan; kalimat lain di pesan yang sama tetap diperiksa.
+idioms:
+  - mati (lampu|listrik|gaya|kutu|ketawa)
+  - (lampu|listrik|wifi|internet|motor|mesin|mobil|laptop|tv|kipas) mati
+  - (hp|baterai|batre|batrei|handphone) (\S+ )?mati
+  - setengah mati
+  - mati matian
+  - (ketawa|ngakak) sampai mati
+  - hilang dari (grup|group|sosmed|medsos|ig|instagram|tiktok|wa|whatsapp|kelas|chat)
+  - (barang|hp|dompet|kunci|tas) (\S+ )?hilang
+  - udahan (sama|dengan) (pacar|doi|dia|mantan|kamu)
+  - udahan (ngerjain|belajar|main|nonton|kerja|ngobrol|dulu|saja ngerjain)
+  - hilang (ingatan|akal|fokus|semangat|nafsu makan|jerawat|bau|kesempatan|sinyal)
+  - tidak (kuat|sanggup|tahan) ... (nahan|menahan|makan|minum|pipis|kebelet|ketawa|ngakak|ngantuk|lapar|kenyang|dingin|panas|pedas|lucu)
+  - hilang (barang|hp|dompet|kunci|tas)

@@ -1,0 +1,76 @@
+# Penanda linguistik (CLAUDE.md §5) + topik pemicu (kartu "Topik pemicu teratas" di dasbor kota).
+# `label` = teks untuk dasbor staf (ejaan mengikuti design/). Tidak pernah tampil ke remaja.
+# TODO_VERIFY: daftar & ambang perlu direview psikolog.
+
+first_person:
+  words: [aku, diriku]
+  min_ratio: 0.12 # proporsi token "aku" (penelitian: fokus diri tinggi pada depresi)
+  min_tokens: 4
+
+absolute:
+  words: [selalu, tidak pernah, semua, semuanya, sama sekali, setiap hari, terus menerus,
+          selamanya, siapapun, tidak ada yang, sepenuhnya, segalanya, total]
+  min_hits: 2
+
+flags:
+  putus_asa:
+    label: Ungkapan putus asa
+    patterns: [percuma, sia sia, putus asa, tidak ada harapan, tidak ada gunanya, tidak ada artinya,
+               tidak ada jalan keluar, tidak akan (berubah|membaik|bisa), buat apa (lagi|juga),
+               aku (gagal|tidak berguna|beban), masa depan (suram|gelap|hancur),
+               tidak ada yang peduli]
+  ruminasi:
+    label: Ruminasi
+    patterns: [kepikiran terus, terus kepikiran, tidak bisa berhenti (mikir|memikirkan|kepikiran),
+               overthinking, mikirin terus, keinget terus, kebayang terus, terus terusan mikir]
+  gangguan_tidur:
+    label: Gangguan tidur
+    patterns: [tidak bisa tidur, susah tidur, insomnia, begadang terus, tidak tidur, kebangun terus]
+  kesepian:
+    label: Kesepian
+    patterns: [kesepian, sendirian, tidak ada teman, tidak punya teman, tidak ada yang ngajak,
+               tidak ada yang peduli, dijauhin, dikucilkan]
+  menarik_diri:
+    label: Menarik diri
+    patterns: [malas ketemu orang, tidak mau keluar kamar, ngurung diri, mengurung diri,
+               menghindar dari, tidak mau sekolah, malas sekolah]
+
+labels: # untuk penanda yang dihitung, bukan dari pola
+  fokus_diri: Fokus diri tinggi
+  kata_absolut: Kata absolut tinggi
+
+topics:
+  akademik:
+    label: Akademik & ujian
+    words: [tugas, ujian, ulangan, nilai, pr, sekolah, guru, rapor, raport, kuliah, snbt, utbk,
+            ptn, belajar, remed, remedial, uts, uas, pelajaran]
+  keluarga:
+    label: Keluarga
+    words: [ayah, ibu, bapak, mama, papa, ortu, orang tua, rumah, kakak, adik, cerai, bapak tiri,
+            ayah tiri, ibu tiri, keluarga]
+  pertemanan:
+    label: Pertemanan & perundungan
+    words: [teman, bully, dibully, dibuli, diejek, ngetawain, ditertawakan, dikucilkan, geng,
+            dijauhin, sahabat, circle]
+  percintaan:
+    label: Percintaan
+    words: [pacar, doi, gebetan, putus, ditolak, crush, mantan, selingkuh, ghosting]
+  citra_diri:
+    label: Citra diri
+    words: [jelek, gendut, kurus, jerawat, insecure, minder, badan, wajah, muka, pendek]
+  ekonomi:
+    label: Ekonomi
+    words: [uang, duit, bayar, spp, utang, hutang, tidak punya uang, kerja, biaya, miskin]
+
+# Label pemicu kasus untuk dasbor staf (bagian "Penanda yang terdeteksi").
+# Kunci = isi `risk_assessments.triggers` selain penanda & topik di atas.
+trigger_labels:
+  ide_bunuh_diri: Ungkapan ingin mati / menghilang
+  perpisahan_atau_rencana: Pesan perpisahan / rencana
+  menyakiti_diri: Menyakiti diri
+  bahaya_dari_orang_lain: Bahaya dari orang lain
+  model_krisis: Terdeteksi model krisis
+  phq9_item9: PHQ-9 item 9 (pikiran menyakiti diri)
+  skrining: Skor skrining tinggi
+  minta_dihubungkan: Minta dihubungkan ke pendamping
+  jurnal: Terdeteksi dari jurnal (isi tetap privat)

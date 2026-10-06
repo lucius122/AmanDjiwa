@@ -1,0 +1,248 @@
+# Kamus normalisasi (CLAUDE.md §5). Kunci & nilai ditulis dengan ejaan biasa; huruf berulang
+# di-"kerangka"-kan otomatis saat dimuat (capekkk = capek, maaf = maf), jadi tidak perlu ditulis
+# semua variannya. Nilai boleh lebih dari satu kata.
+# Tambahan entri: cukup tambahkan baris, lalu jalankan `uv run pytest tests/test_crisis.py`.
+
+slang:
+  # negasi
+  gak: tidak
+  ga: tidak
+  gk: tidak
+  g: tidak
+  nggak: tidak
+  ngga: tidak
+  ngak: tidak
+  enggak: tidak
+  engga: tidak
+  gag: tidak
+  kagak: tidak
+  tdk: tidak
+  ndak: tidak
+  nda: tidak
+  ora: tidak # Jawa
+  ra: tidak # Jawa
+  gaada: tidak ada
+  gada: tidak ada
+  gakada: tidak ada
+  tiada: tidak ada
+  gamau: tidak mau
+  gabisa: tidak bisa
+  gakuat: tidak kuat
+  gausah: tidak usah
+  gatau: tidak tahu
+  gapapa: tidak apa apa
+  # ingin / mau
+  pengen: ingin
+  pengin: ingin
+  pingin: ingin
+  kepengen: ingin
+  kepingin: ingin
+  pgn: ingin
+  pngn: ingin
+  pngen: ingin
+  pen: ingin
+  arep: mau # Jawa
+  gelem: mau # Jawa
+  mo: mau
+  # saja
+  aja: saja
+  aj: saja
+  ae: saja # Jawa
+  wae: saja # Jawa
+  doang: saja
+  # sudah
+  udah: sudah
+  udh: sudah
+  uda: sudah
+  dah: sudah
+  sdh: sudah
+  wis: sudah # Jawa
+  wes: sudah # Jawa
+  # kata ganti
+  gue: aku
+  gua: aku
+  gw: aku
+  gwe: aku
+  ak: aku
+  aq: aku
+  saya: aku
+  sy: aku
+  aing: aku
+  inyong: aku
+  ku: aku
+  akuh: aku
+  lu: kamu
+  lo: kamu
+  loe: kamu
+  elu: kamu
+  km: kamu
+  kmu: kamu
+  awakku: diriku # Jawa
+  awak: diri # Jawa (badan/diri)
+  dri: diri
+  # hidup / mati
+  idup: hidup
+  urip: hidup # Jawa
+  hdp: hidup
+  mti: mati
+  mt: mati
+  matek: mati
+  modar: mati
+  mampus: mati
+  metong: mati
+  mokat: mati
+  # bunuh
+  bnh: bunuh
+  bnuh: bunuh
+  bunh: bunuh
+  bundir: bunuh diri
+  bunuhdiri: bunuh diri
+  nglalu: bunuh diri # Jawa
+  # hilang / menyerah / akhiri
+  ngilang: hilang
+  ilang: hilang
+  menghilang: hilang
+  lenyap: hilang
+  sangup: sanggup
+  nyerah: menyerah
+  nyrah: menyerah
+  ngakhirin: akhiri
+  ngakhiri: akhiri
+  mengakhiri: akhiri
+  akhirin: akhiri
+  mungkasi: akhiri # Jawa
+  nyusul: menyusul
+  nyudahin: akhiri
+  udahin: akhiri
+  sudahi: akhiri
+  menyudahi: akhiri
+  ketabrak: tertabrak
+  ditabrak: tertabrak
+  ngehajar: hajar
+  nyiksa: siksa
+  nyebur: lompat
+  ngerasa: merasa
+  liat: lihat
+  sirna: hilang
+  nyesel: menyesal
+  ngelompat: lompat
+  nyiapin: siapkan
+  nyiapain: siapkan
+  siapin: siapkan
+  grepe2: grepe
+  ngeliat: lihat
+  ngores: gores
+  goresin: gores
+  nusuk: tusuk
+  tdr: tidur
+  nek: kalau # Jawa
+  ono: ada # Jawa
+  ngabisin: akhiri
+  habisi: akhiri
+  menghabisi: akhiri
+  # menyakiti diri
+  nyakitin: menyakiti
+  sakitin: menyakiti
+  nyakiti: menyakiti
+  nglarani: menyakiti # Jawa
+  lukain: melukai
+  ngelukain: melukai
+  lukai: melukai
+  nyiletin: nyilet
+  nyayatin: nyayat
+  menyayat: sayat
+  sayatin: sayat
+  ngiris: iris
+  irisin: iris
+  loncat: lompat
+  njegur: lompat # Jawa
+  terjun: lompat
+  nabrakin: tabrakkan
+  nabrak: tabrakkan
+  tabrakin: tabrakkan
+  baygon: racun
+  pestisida: racun
+  od: overdosis
+  overdose: overdosis
+  # lain-lain
+  kuwat: kuat # Jawa
+  maneh: lagi # Jawa
+  meneh: lagi # Jawa
+  lg: lagi
+  lgi: lagi
+  sm: sama
+  ama: sama
+  karo: sama # Jawa
+  luwih: lebih # Jawa
+  lbh: lebih
+  becik: baik # Jawa
+  apik: baik # Jawa
+  mending: lebih baik
+  mendingan: lebih baik
+  bgt: banget
+  bngt: banget
+  bener: benar
+  bnr: benar
+  krn: karena
+  karna: karena
+  yg: yang
+  dgn: dengan
+  tp: tapi
+  jd: jadi
+  klo: kalau
+  kalo: kalau
+  kl: kalau
+  org: orang
+  ortu: orang tua
+  tmn: teman
+  temen: teman
+  sklh: sekolah
+  skrg: sekarang
+  dr: dari
+  td: tadi
+  mlm: malam
+  trs: terus
+  trus: terus
+  bs: bisa
+  emg: memang
+  sndiri: sendiri
+  ngerepotin: menyusahkan
+  nyusahin: menyusahkan
+  males: malas
+  cape: capek
+  cpk: capek
+  bosen: bosan
+  ngapain: buat apa
+
+# Emoji → kata. Emoji yang menyiratkan bahaya dipetakan ke kata yang dikenali leksikon krisis.
+emoji:
+  "😭": emo_nangis
+  "😢": emo_nangis
+  "🥺": emo_nangis
+  "😞": emo_sedih
+  "😔": emo_sedih
+  "💔": emo_patah_hati
+  "😡": emo_marah
+  "🤬": emo_marah
+  "😤": emo_marah
+  "😰": emo_cemas
+  "😨": emo_cemas
+  "😱": emo_cemas
+  "😖": emo_cemas
+  "😊": emo_senang
+  "😄": emo_senang
+  "😁": emo_senang
+  "🥰": emo_senang
+  "😂": emo_ketawa
+  "🤣": emo_ketawa
+  "💀": emo_tengkorak
+  "🔪": pisau
+  "🩸": darah
+  "💊": obat
+  "⚰": mati
+  "🪦": mati
+  "🪢": tali
+
+# Target koreksi salah ketik (hanya untuk kata ≥ 5 huruf yang tidak ada di kamus).
+# Sengaja sempit: hanya kata kunci krisis, supaya kata biasa tidak berubah arti.
+fuzzy_targets: [bunuh, gantung, silet, nyilet, sayat, nyayat, racun, overdosis, menyakiti, melukai, akhiri, menyerah]

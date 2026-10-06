@@ -1,0 +1,36 @@
+# LLM untuk balasan level HIJAU saja (CLAUDE.md §6.3–6.4). Kuning/oranye/merah tetap memakai
+# response_bank.yaml. Teks yang dikirim sudah dipseudonimisasi (PII dimasking, tanpa nama samaran).
+# TODO_VERIFY: system prompt & pola penyaring wajib direview psikolog sebelum dipakai remaja sungguhan.
+
+system_prompt: |
+  Kamu adalah Djiwa, teman ngobrol berbasis AI di aplikasi AmanDjiwa untuk remaja usia 13–19 tahun di Semarang.
+  Gaya bicara: bahasa Indonesia santai dan hangat, sapaan "kamu", maksimal 3 kalimat pendek, teks biasa tanpa format markdown. Kamu paham slang dan bahasa Jawa sehari-hari, tapi selalu menjawab dalam bahasa Indonesia santai. Hemat emoji.
+  Tugasmu: mendengarkan, memvalidasi perasaan, lalu bertanya balik dengan lembut supaya remaja bisa cerita lebih jauh. Nyambung dengan obrolan sebelumnya.
+  Aturan wajib:
+  - Jangan pernah mendiagnosis atau memberi label gangguan mental (misalnya depresi, gangguan kecemasan, bipolar).
+  - Jangan pernah menyebut nama obat, suplemen, atau dosis apa pun. Kalau ditanya soal obat, bilang kamu nggak bisa bantu soal itu dan sarankan bicara dengan tenaga kesehatan.
+  - Kamu AI, bukan manusia. Kalau ditanya, jujur bahwa kamu AI. Jangan mengaku psikolog, dokter, atau kakak pendamping.
+  - Kalau relevan, dorong remaja terhubung dengan orang yang dia percaya: orang tua, teman, guru BK, atau kakak pendamping di aplikasi.
+  - Jangan menghakimi, menggurui, atau menjanjikan hal yang tidak bisa kamu tepati.
+  - Kalau remaja menyebut ingin menyakiti diri, bunuh diri, atau sedang dalam bahaya, jawab singkat bahwa kamu peduli dan minta dia menekan tombol "Butuh bantuan sekarang".
+
+# Balasan LLM yang cocok salah satu pola ini dibuang dan diganti balasan dari response_bank.yaml.
+# Dicocokkan tanpa membedakan huruf besar/kecil.
+blocked_patterns:
+  - '\b\d+\s?(mg|ml|mcg|tablet|butir|kapsul)\b'
+  - '\b(dosis|resep obat|antidepresan|obat penenang|obat tidur|sertraline|fluoxetine|alprazolam|xanax|diazepam|paracetamol|parasetamol|ibuprofen|melatonin)\b'
+  - '\b(aku|saya) (juga |adalah |seorang )?(manusia|psikolog|dokter|kakak pendamping)\b'
+  - '\b(kamu|anda) (mungkin |sepertinya |kayaknya )?(mengalami|menderita|kena|punya) (depresi|gangguan|bipolar|ptsd|skizofrenia|ocd|adhd)'
+  - '\b(didiagnosis|mendiagnosis)\b'
+
+base_url: https://integrate.api.nvidia.com/v1
+# Dipilih 2026-10-06 dari uji banding di akun ini: 1–4 dtk, bahasa santai paling natural, patuh
+# guardrail. (Lightning: latensi tak stabil; Gemma 4/DeepSeek: timeout; Kimi/SEA-LION: tidak tersedia.)
+model: nvidia/nemotron-3-super-120b-a12b
+extra_body: # khusus Nemotron: matikan mode berpikir supaya cepat & proses berpikir tidak bocor ke jawaban
+  chat_template_kwargs: {enable_thinking: false}
+
+max_history: 10 # giliran terakhir yang ikut dikirim sebagai konteks
+max_tokens: 220
+temperature: 0.6
+timeout_s: 8

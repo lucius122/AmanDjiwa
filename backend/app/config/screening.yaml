@@ -1,0 +1,41 @@
+# Teks skrining untuk remaja. Item 1–2 PHQ-9 & GAD-7 + opsi jawaban = teks desain.
+# DESIGN-GAP: item lain ditulis dengan gaya bahasa yang sama (adaptasi PHQ-9 / GAD-7).
+# TODO_VERIFY: wajib divalidasi psikolog; pertimbangkan terjemahan resmi PHQ-A / GAD-7.
+# Skor & kategori TIDAK pernah ditampilkan ke remaja (§6.7).
+stem: "Dalam 2 minggu terakhir, "
+options: [Tidak pernah, Beberapa hari, Lebih dari separuh hari, Hampir setiap hari]
+items:
+  phq9:
+    1: seberapa sering kamu kurang tertarik atau nggak senang melakukan hal yang biasanya kamu suka?
+    2: seberapa sering kamu merasa sedih, murung, atau putus asa?
+    3: seberapa sering kamu susah tidur, sering kebangun, atau malah tidur kebanyakan?
+    4: seberapa sering kamu merasa capek atau nggak bertenaga?
+    5: seberapa sering nafsu makanmu berkurang, atau malah makan berlebihan?
+    6: seberapa sering kamu merasa buruk tentang dirimu, merasa gagal, atau mengecewakan diri sendiri dan keluarga?
+    7: seberapa sering kamu susah konsentrasi, misalnya waktu belajar, baca, atau nonton?
+    8: seberapa sering kamu bergerak atau bicara jauh lebih lambat dari biasanya, atau malah gelisah dan nggak bisa diam?
+    9: seberapa sering kamu kepikiran lebih baik mati, atau ingin menyakiti dirimu sendiri?
+  gad7:
+    1: seberapa sering kamu merasa gugup, cemas, atau gelisah?
+    2: seberapa sering kamu susah berhenti khawatir?
+    3: seberapa sering kamu terlalu khawatir tentang banyak hal?
+    4: seberapa sering kamu susah merasa santai?
+    5: seberapa sering kamu gelisah sampai susah duduk diam?
+    6: seberapa sering kamu gampang kesal atau marah?
+    7: seberapa sering kamu merasa takut seolah sesuatu yang buruk bakal terjadi?
+intro: Boleh. Ada 4 pertanyaan singkat soal 2 minggu terakhir. Kamu boleh lewati kapan aja.
+# DESIGN-GAP: tawaran lanjut (alur bertahap, keputusan 2026-10-05) tidak ada di desain.
+followup_offer: Makasih udah jawab. Ada beberapa pertanyaan lagi biar gambarannya lebih lengkap. Mau lanjut? Kamu boleh berhenti kapan aja.
+stop: Oke, kita ngobrol biasa aja ya.
+results:
+  low: Makasih udah jawab. Dari jawabanmu, kayaknya kamu lagi cukup oke. Tetap isi jurnal ya biar kamu bisa lihat perubahannya.
+  mid: Makasih udah jujur. Ada beberapa hal yang lagi berat buat kamu. Mau coba isi jurnal emosi atau latihan napas?
+  high: Makasih udah jujur. Kayaknya belakangan ini cukup berat buat kamu. Kalau kamu mau, aku bisa hubungkan ke kakak pendamping di {kelurahan}.
+disclaimer: Ini bukan diagnosis, cuma gambaran awal.
+# Label kategori untuk dasbor staf (ejaan mengikuti design/).
+severity_labels:
+  minimal: Minimal
+  ringan: Ringan
+  sedang: Sedang
+  sedang_berat: Sedang-berat
+  berat: Berat
