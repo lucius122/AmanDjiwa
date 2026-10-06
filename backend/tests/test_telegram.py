@@ -71,7 +71,7 @@ async def test_linked_crisis_shows_card_hotlines_and_connect(
     async with TestSession() as s:
         outs = await logic.on_text(redis_client, s, TG_ID, "aku pengen mati aja", NO_MODELS)
     card = next(o for o in outs if o.text.startswith("Kamu nggak harus hadapi ini sendirian"))
-    assert "Layanan darurat: TODO_VERIFY" in card.text
+    assert "TODO_VERIFY" not in card.text and logic.TG["hotline_unverified"] in card.text
     assert card.buttons == [[("Hubungkan aku ke pendamping", "connect")]]
     async with TestSession() as s:
         (case,) = (await s.execute(select(Case))).scalars()
@@ -83,7 +83,8 @@ async def test_unlinked_crisis_still_gets_hotlines_without_case(
 ) -> None:
     async with TestSession() as s:
         outs = await logic.on_text(redis_client, s, 123, "pengen bundir", NO_MODELS)
-        assert "Layanan darurat: TODO_VERIFY" in outs[0].text and outs[0].buttons == []
+        assert "TODO_VERIFY" not in outs[0].text and outs[0].buttons == []
+        assert logic.TG["hotline_unverified"] in outs[0].text
         assert outs[-1].text == logic.TG["not_linked"]
         assert (await s.execute(select(Case))).scalars().all() == []
         normal = await logic.on_text(redis_client, s, 123, "halo", NO_MODELS)

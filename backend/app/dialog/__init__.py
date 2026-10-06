@@ -67,7 +67,7 @@ class ChatTurn(BaseModel):
     connected: bool = False
     screening: ScreeningQuestion | None = None  # kartu pertanyaan yang sedang aktif
     followup_offer: bool = False  # tombol "Lanjut" / "Berhenti" setelah PHQ-4 positif
-    client_action: Literal["open_napas"] | None = None
+    client_action: Literal["open_napas", "open_help"] | None = None
 
 
 class DialogError(Exception):
@@ -185,11 +185,19 @@ class Dialog:
                 turn = ChatTurn(
                     messages=[BotMessage(text=_DIALOG["napas"])], client_action="open_napas"
                 )
+            elif green and _has_intent(analysis.normalized, "bantuan"):
+                # Nomor/kontak/tautan layanan: daftar resmi hotlines.yaml, tidak pernah dari LLM.
+                turn = ChatTurn(
+                    messages=[BotMessage(text=_DIALOG["bantuan"].format(**_fmt(ctx)))],
+                    hotlines=list(crisis_reply(ctx).hotlines),
+                    offer_connect=not st.connected,
+                    client_action="open_help",
+                )
             else:
                 turn = _from_reply(reply)
                 # Hanya hijau boleh LLM (§6.3–6.4); gagal/ditolak = tetap balasan bank di atas.
                 if green and not await store.has_open_high_risk_case(self.session, self.user):
-                    free = await llm.green_reply(history, text, self.user.pseudonym)
+                    free = await llm.green_reply(history, text, self.user.pseudonym, self.channel)
                     if free:
                         turn = ChatTurn(messages=[BotMessage(text=free)])
         if turn.screening is None:  # kartu skrining tetap tampil kalau masih berjalan

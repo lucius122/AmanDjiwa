@@ -12,12 +12,15 @@ import time
 import httpx
 import yaml
 
+from app.models import Channel
 from app.pipeline.normalize import mask_pii
 from app.settings import CONFIG_DIR, settings
 
 log = logging.getLogger(__name__)
 CFG = yaml.safe_load((CONFIG_DIR / "llm.yaml").read_text("utf-8"))
-_BLOCKED = [re.compile(p, re.I) for p in CFG["blocked_patterns"]]
+_BLOCKED = [re.compile(p, re.I | re.M) for p in CFG["blocked_patterns"]]
+# Balasan yang sebagian besar berbahasa Inggris = injeksi "answer in English" berhasil.
+_ENGLISH = re.compile(r"\b(the|you|your|and|is|are|i'm|i am|can't|cannot|with|this|that)\b", re.I)
 
 Turn = tuple[str, str]  # (role "user" | "assistant", teks)
 
@@ -26,7 +29,9 @@ def enabled() -> bool:
     return bool(settings.nvidia_api_key)
 
 
-def build_messages(history: list[Turn], text: str, nickname: str | None) -> list[dict[str, str]]:
+def build_messages(
+    history: list[Turn], text: str, nickname: str | None, channel: Channel = Channel.web
+) -> list[dict[str, str]]:
     """Pseudonimisasi (§6.4): PII dimasking dan nama samaran diganti "kamu" sebelum dikirim."""
 
     def clean(t: str) -> str:
@@ -35,14 +40,25 @@ def build_messages(history: list[Turn], text: str, nickname: str | None) -> list
 
     recent = history[-CFG["max_history"] :]
     return [
-        {"role": "system", "content": CFG["system_prompt"]},
+        {
+            "role": "system",
+            "content": CFG["system_prompt"].format(bantuan=CFG["help_hint"][channel]),
+        },
         *({"role": role, "content": clean(t)} for role, t in recent),
         {"role": "user", "content": clean(text)},
     ]
 
 
 def acceptable(reply: str) -> bool:
-    return bool(reply) and not any(p.search(reply) for p in _BLOCKED)
+    """Penyaring keluaran: kosong, terlalu panjang, berformat daftar, berbahasa Inggris, atau cocok
+    pola terlarang → dibuang (dialog memakai bank respons)."""
+    return (
+        bool(reply)
+        and len(reply) <= CFG["max_chars"]
+        and len(reply.splitlines()) <= 2
+        and len(_ENGLISH.findall(reply)) < 3
+        and not any(p.search(reply) for p in _BLOCKED)
+    )
 
 
 async def _complete(messages: list[dict[str, str]]) -> tuple[str, str]:
@@ -64,12 +80,14 @@ async def _complete(messages: list[dict[str, str]]) -> tuple[str, str]:
         return (choice["message"].get("content") or "").strip(), choice.get("finish_reason") or ""
 
 
-async def green_reply(history: list[Turn], text: str, nickname: str | None) -> str | None:
+async def green_reply(
+    history: list[Turn], text: str, nickname: str | None, channel: Channel = Channel.web
+) -> str | None:
     if not enabled():
         return None
     start = time.perf_counter()
     try:
-        reply, finish = await _complete(build_messages(history, text, nickname))
+        reply, finish = await _complete(build_messages(history, text, nickname, channel))
     except Exception as e:  # noqa: BLE001 — LLM opsional; gagal = bank respons
         log.warning("llm_failed error=%s", type(e).__name__)
         return None
@@ -80,4 +98,4 @@ async def green_reply(history: list[Turn], text: str, nickname: str | None) -> s
         )
         return None
     log.info("llm_ok ms=%.0f", ms)
-    return reply
+    return " ".join(reply.split())  # satu paragraf, seperti bubble chat

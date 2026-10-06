@@ -41,7 +41,7 @@ export interface ChatTurn {
   connected: boolean;
   screening: ScreeningQuestion | null;
   followup_offer: boolean;
-  client_action: 'open_napas' | null;
+  client_action: 'open_napas' | 'open_help' | null;
 }
 
 export interface HistoryItem {

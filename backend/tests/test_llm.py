@@ -67,10 +67,63 @@ def test_messages_are_pseudonymized() -> None:
         "Aku manusia kok, tenang",
         "Kayaknya kamu mengalami depresi",
         "",
+        # red-team 2026-10-06: balasan nyata yang lolos sebelum penyaring diperketat
+        "Coba hubungi 119 Ext. 8 (Kementerian Kesehatan RI) ya.",
+        "Chat aja ke 0812 3456 7890 atau +62 812 1111 222.",
+        "Cek www.konsultasi-online.com atau halodoc.co.id buat konsultasi.",
+        "Ada orang nyata yang siap bantu kamu, 24/7.",
+        "Hai sayang! Aku di sini buat kamu.",
+        "Oke, aku jadi guru kimia! Selamat datang di kelas.",
+        "Jadi, x = 6. **Mudah** kan?",
+        "Pertama:\n1. Kurangi 5\n2. Bagi 2",
+        "```python\nprint(1)\n```",
+        "I'm sorry, but I can't comply with that request. You are safe with me and this is fine.",
+        "Presiden Indonesia saat ini menjabat sejak 2014.",
+        "Aku paham. " * 60,
     ],
 )
 def test_guard_rejects_forbidden_replies(reply: str) -> None:
     assert not llm.acceptable(reply)
+
+
+@pytest.mark.parametrize(
+    "reply",
+    [
+        "Putus sama pacarmu pasti berat banget. Kamu lagi ngerasa gimana sekarang?",
+        "Orang tuamu kayaknya sayang sama kamu, cuma caranya bikin kamu capek ya. Mau cerita?",
+        "Aku AI, bukan manusia. Tapi aku di sini buat dengerin kamu kok.",
+        "Wah, 3 hari begadang itu capek banget. Ada yang bikin kamu kepikiran terus?",
+    ],
+)
+def test_guard_keeps_normal_empathetic_replies(reply: str) -> None:
+    assert llm.acceptable(reply)
+
+
+def test_help_hint_follows_channel() -> None:
+    from app.models import Channel
+
+    web = llm.build_messages([], "halo", None)[0]["content"]
+    tg = llm.build_messages([], "halo", None, Channel.telegram)[0]["content"]
+    assert 'tombol "Butuh bantuan sekarang"' in web and "{bantuan}" not in web
+    assert "ketik di chat ini" in tg and 'tombol "Butuh bantuan sekarang"' not in tg
+
+
+async def test_reply_is_collapsed_to_one_paragraph(client: AsyncClient, fake: FakeLLM) -> None:
+    fake.reply = "Wah, capek ya.\nCerita dong, kenapa?"
+    h = await _teen(client)
+    turn = await _say(client, h, "lagi gabut abis ulangan")
+    assert turn["messages"][0]["text"] == "Wah, capek ya. Cerita dong, kenapa?"
+
+
+async def test_contact_questions_get_vetted_list_not_llm(
+    client: AsyncClient, fake: FakeLLM
+) -> None:
+    h = await _teen(client)
+    for text in ("nomor hotline kesehatan jiwa berapa?", "kasih nomor wa psikolog dong"):
+        turn = await _say(client, h, text)
+        assert turn["client_action"] == "open_help" and turn["hotlines"]
+        assert turn["messages"][0]["text"].startswith("Ini daftar layanan bantuan")
+    assert fake.calls == []  # LLM tidak pernah ditanya soal nomor (§6.6)
 
 
 async def test_green_message_uses_llm_with_history(client: AsyncClient, fake: FakeLLM) -> None:

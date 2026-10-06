@@ -59,7 +59,15 @@ dialog:
   # DESIGN-GAP: desain hanya punya versi pendamping; versi konselor (lintas kelurahan).
   konselor_greeting: Hai {nama}, aku {pendamping}, konselor AmanDjiwa. Makasih udah berani cerita. Aku di sini buat dengerin. Kamu lagi di tempat yang aman sekarang?
   connect_ack: Oke, aku udah kabarin kakak pendamping di {kelurahan}. Kakak pendamping bakal nyapa kamu di sini. Sambil nunggu, aku tetap nemenin.
+  # Remaja menanyakan nomor/kontak/tautan layanan → daftar resmi dari hotlines.yaml, BUKAN LLM
+  # (LLM terbukti mengarang nomor saat red-team, §6.6). DESIGN-GAP: tidak ada di desain.
+  bantuan: Ini daftar layanan bantuan dari tim AmanDjiwa. Kalau mau, aku juga bisa minta kakak pendamping di {kelurahan} buat nyapa kamu di sini.
   # Intent hanya berlaku saat pesan berlevel hijau; krisis selalu didahulukan.
   intents:
     skrining: [skrining, cek perasaan]
     napas: [napas, nafas]
+    bantuan:
+      - hotline
+      - butuh bantuan sekarang
+      - (nomor|kontak|telepon|telpon|link|website|situs) ... (darurat|bantuan|psikolog|psikiater|konselor|konseling|konsultasi|kesehatan jiwa|layanan|pendamping|curhat)
+      - (darurat|psikolog|psikiater|konselor|konseling|pendamping) ... (nomor|kontak|telepon|telpon|link|website|situs)

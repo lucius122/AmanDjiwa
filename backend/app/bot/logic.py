@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.dialog import Action, ChatTurn, Dialog, DialogError
 from app.models import Channel, ChannelLink, MessageKind, User, UserStatus
 from app.pipeline import Models, analyze
-from app.pipeline.responder import BANK, ReplyContext, crisis_reply
+from app.pipeline.responder import BANK, Hotline, ReplyContext, crisis_reply
 from app.redis import hit_rate_limit
 from app.settings import CONFIG_DIR
 
@@ -134,10 +134,23 @@ async def _unlinked(text: str, models: Models) -> list[OutMsg]:
     return [*render_card(turn, can_connect=False), OutMsg(TG["not_linked"])]
 
 
+UNVERIFIED = "TODO_VERIFY"  # nilai awal hotlines.yaml (§6.6); web menampilkan "[ nomor ]"
+
+
+def hotline_lines(hotlines: list[Hotline]) -> list[str]:
+    """Nomor yang belum diverifikasi tidak pernah ditampilkan; ganti dengan pemberitahuan."""
+    lines = [
+        TG["hotline"].format(label=h.label, number=h.number)
+        for h in hotlines
+        if h.number != UNVERIFIED
+    ]
+    return lines + [TG["hotline_unverified"]] if len(lines) < len(hotlines) else lines
+
+
 def render_card(turn: ChatTurn, can_connect: bool = True) -> list[OutMsg]:
     card = turn.card
     assert card is not None
-    hotlines = [TG["hotline"].format(label=h.label, number=h.number) for h in turn.hotlines]
+    hotlines = hotline_lines(turn.hotlines)
     text = "\n".join([card.title, "", card.body, "", *hotlines, "", card.footer])
     buttons = [[(card.connect_label, "connect")]] if can_connect and not turn.connected else []
     return [OutMsg(text, buttons)]
@@ -152,7 +165,7 @@ def render(turn: ChatTurn) -> list[OutMsg]:
         else:
             out.append(OutMsg(m.text))
     if turn.hotlines and turn.card is None:  # fallback_safe: hotline tetap dikirim
-        out.append(OutMsg("\n".join(f"{h.label}: {h.number}" for h in turn.hotlines)))
+        out.append(OutMsg("\n".join(hotline_lines(turn.hotlines))))
     if turn.offer_connect and turn.card is None and not turn.connected:
         _attach(out, [[(BANK["merah"]["card"]["connect_label"], "connect")]])
     if turn.followup_offer:

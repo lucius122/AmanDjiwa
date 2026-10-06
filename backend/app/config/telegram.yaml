@@ -11,6 +11,8 @@ skip: Lewati dulu
 stop: Berhenti
 continue: Lanjut
 hotline: "{label}: {number}"
+# Nomor di hotlines.yaml masih TODO_VERIFY → jangan tampilkan placeholder ke remaja (sama dengan web).
+hotline_unverified: Nomor layanan sedang diverifikasi tim. Untuk sekarang, minta dihubungkan ke kakak pendamping ya.
 # Label pesan pendamping (sama dengan bubble web: "Kak Dimas · pendamping").
 pendamping: "{nama} · pendamping"
 # Pengingat jurnal harian 19.00 WIB (jobs/). DESIGN-GAP + TODO_VERIFY. Bisa dimatikan: /pengingat

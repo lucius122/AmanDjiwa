@@ -72,6 +72,8 @@ export function Chat({ me }: { me: Me }) {
     setConnected(turn.connected);
     setOfferConnect(turn.offer_connect && !turn.card && !turn.connected);
     if (turn.client_action === 'open_napas') window.setTimeout(() => setSheet('napas'), 500);
+    // Menanyakan nomor/kontak layanan → daftar resmi (hotlines.yaml) di sheet bantuan.
+    if (turn.client_action === 'open_help') window.setTimeout(() => setSheet('help'), 500);
   }
 
   async function call<T extends object>(path: string, body: T, mine?: string) {
