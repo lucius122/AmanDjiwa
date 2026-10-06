@@ -23,6 +23,18 @@ sebelum mengubah kode.
 | Dasbor kota (agregat, k ≥ 10) | admin kota | `/kota` |
 | Bot Telegram | remaja | @AmanDjiwa_bot (tautkan dari menu Aku) |
 
+### Tampilan pemantauan (staf)
+
+Semua tangkapan layar memakai data **sintetis** (`seed-demo`).
+
+| Peran | Yang dipantau | Layar |
+|---|---|---|
+| Pendamping | antrian kasus kelurahannya (merah & baru di atas), detail kasus, cuplikan pesan pemicu (akses tercatat), catatan, rujukan | [antrian & detail](docs/screenshots/02-pendamping-antrian.png) · [riwayat](docs/screenshots/03-pendamping-riwayat.png) · [jadwal](docs/screenshots/04-pendamping-jadwal.png) · [pengaturan](docs/screenshots/05-pendamping-pengaturan.png) · [HP](docs/screenshots/06-pendamping-hp.png) |
+| Konselor | kasus oranye & merah di semua kelurahan | [antrian](docs/screenshots/07-konselor-antrian.png) |
+| Admin kota | hanya agregat (k ≥ 10): KPI, peta risiko per kelurahan, distribusi level, tren emosi, topik pemicu | [peta](docs/screenshots/08-kota-peta.png) · [tabel](docs/screenshots/09-kota-tabel.png) |
+
+Login staf: [email + kata sandi + kode authenticator](docs/screenshots/01-login-staf.png).
+
 Alur per pesan: normalisasi → (detektor krisis ‖ emosi ‖ penanda linguistik) → skor TER →
 level hijau/kuning/oranye/merah (krisis selalu merah) → balasan → kasus + notifikasi pendamping.
 Detail di CLAUDE.md §5–§6.

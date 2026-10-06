@@ -6,3 +6,6 @@ __pycache__/
 .ruff_cache/
 .env
 *.onnx
+
+# akun demo lokal (dibuat cli seed-demo)
+*.local.txt
