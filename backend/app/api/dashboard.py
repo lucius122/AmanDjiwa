@@ -5,12 +5,14 @@ dikembalikan sebagai null. Endpoint ini tidak pernah mengembalikan baris individ
 pengguna hanya dipakai di dalam query untuk menghitung jumlah.
 """
 
+import uuid
 from datetime import date, datetime, time, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
-from sqlalchemy import Select, case, distinct, func, literal, select, union_all
+from sqlalchemy import ColumnElement, Select, case, distinct, func, literal, select, union_all
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import InstrumentedAttribute
 
 from app.api.cases import detected_at
 from app.api.deps import current_staff
@@ -90,7 +92,16 @@ def _pct(part: int, whole: int) -> int:
     return round(part * 100 / whole) if whole else 0
 
 
-def _per_user_levels(start: date, end: date) -> Select[tuple[int | None, int, int]]:
+def _in_kel(
+    user_id: InstrumentedAttribute[uuid.UUID], kel: int | None
+) -> list[ColumnElement[bool]]:
+    """Filter opsional `kelurahan=`: baris milik remaja kelurahan itu saja."""
+    return [user_id.in_(select(User.id).where(User.kelurahan_id == kel))] if kel else []
+
+
+def _per_user_levels(
+    start: date, end: date, kel: int | None = None
+) -> Select[tuple[int | None, int, int]]:
     """(kelurahan_id, peringkat level tertinggi, jumlah pengguna) untuk remaja aktif di periode.
 
     Aktif = punya asesmen (pesan / skrining) atau entri jurnal. Jurnal tanpa asesmen = hijau.
@@ -112,22 +123,31 @@ def _per_user_levels(start: date, end: date) -> Select[tuple[int | None, int, in
     return (
         select(User.kelurahan_id, per_user.c.rank, func.count())
         .join(User, User.id == per_user.c.uid)
-        .where(User.role == Role.remaja)
+        .where(User.role == Role.remaja, *([User.kelurahan_id == kel] if kel else []))
         .group_by(User.kelurahan_id, per_user.c.rank)
     )
 
 
-async def _kpis(session: AsyncSession, start: date, end: date, active: int) -> Kpis:
+async def _kpis(
+    session: AsyncSession, start: date, end: date, active: int, kel: int | None
+) -> Kpis:
     lo, hi = _bounds(start, end)
     days = (end - start).days + 1
     prev_start, prev_end = start - timedelta(days=days), start - timedelta(days=1)
-    prev = sum(n for _, _, n in (await session.execute(_per_user_levels(prev_start, prev_end))))
+    prev_rows = await session.execute(_per_user_levels(prev_start, prev_end, kel))
+    prev = sum(n for _, _, n in prev_rows)
+    case_kel = [Case.kelurahan_id == kel] if kel else []
 
     local_day = func.date(func.timezone("Asia/Jakarta", Message.created_at))
     user_days = (
         select(Conversation.user_id, local_day)
         .join(Conversation, Conversation.id == Message.conversation_id)
-        .where(Message.sender == Sender.remaja, Message.created_at >= lo, Message.created_at < hi)
+        .where(
+            Message.sender == Sender.remaja,
+            Message.created_at >= lo,
+            Message.created_at < hi,
+            *_in_kel(Conversation.user_id, kel),
+        )
         .distinct()
         .subquery()
     )
@@ -139,6 +159,7 @@ async def _kpis(session: AsyncSession, start: date, end: date, active: int) -> K
                 Case.level.in_([RiskLevel.oranye, RiskLevel.merah]),
                 detected_at >= lo,
                 detected_at < hi,
+                *case_kel,
             )
         )
     ).all()
@@ -148,7 +169,10 @@ async def _kpis(session: AsyncSession, start: date, end: date, active: int) -> K
             # ponytail: waktu rujukan = updated_at; tambah kolom referred_at kalau kasus
             # yang sudah dirujuk mulai sering diubah lagi.
             select(func.count()).where(
-                Case.status == CaseStatus.dirujuk, Case.updated_at >= lo, Case.updated_at < hi
+                Case.status == CaseStatus.dirujuk,
+                Case.updated_at >= lo,
+                Case.updated_at < hi,
+                *case_kel,
             )
         )
     ).scalar_one()
@@ -161,9 +185,13 @@ async def _kpis(session: AsyncSession, start: date, end: date, active: int) -> K
     )
 
 
-async def _trend(session: AsyncSession, start: date, end: date) -> list[TrendWeek]:
+async def _trend(session: AsyncSession, start: date, end: date, kel: int | None) -> list[TrendWeek]:
     week = func.date_trunc("week", JournalEntry.entry_date).cast(JournalEntry.entry_date.type)
-    in_range = (JournalEntry.entry_date >= start, JournalEntry.entry_date <= end)
+    in_range = (
+        JournalEntry.entry_date >= start,
+        JournalEntry.entry_date <= end,
+        *_in_kel(JournalEntry.user_id, kel),
+    )
     counts: dict[date, dict[Emotion, int]] = {}
     for w, emotion, n in await session.execute(
         select(week, JournalEntry.emotion, func.count())
@@ -194,7 +222,9 @@ async def _trend(session: AsyncSession, start: date, end: date) -> list[TrendWee
     return out
 
 
-async def _topics(session: AsyncSession, start: date, end: date) -> list[TopicStat]:
+async def _topics(
+    session: AsyncSession, start: date, end: date, kel: int | None
+) -> list[TopicStat]:
     """Pangsa topik pemicu; satu pengguna dihitung sekali per topik."""
     lo, hi = _bounds(start, end)
     items = (
@@ -202,7 +232,11 @@ async def _topics(session: AsyncSession, start: date, end: date) -> list[TopicSt
             RiskAssessment.user_id.label("uid"),
             func.jsonb_array_elements_text(RiskAssessment.triggers).label("t"),
         )
-        .where(RiskAssessment.created_at >= lo, RiskAssessment.created_at < hi)
+        .where(
+            RiskAssessment.created_at >= lo,
+            RiskAssessment.created_at < hi,
+            *_in_kel(RiskAssessment.user_id, kel),
+        )
         .subquery()
     )
     pairs = select(items.c.uid, items.c.t).where(items.c.t.like("topik:%")).distinct().subquery()
@@ -223,6 +257,7 @@ async def _topics(session: AsyncSession, start: date, end: date) -> list[TopicSt
 async def aggregate(
     start: date | None = Query(None, alias="from"),
     end: date | None = Query(None, alias="to"),
+    kelurahan: int | None = Query(None),
     staff: User = Depends(current_staff),
     session: AsyncSession = Depends(get_session),
 ) -> Aggregate:
@@ -232,26 +267,35 @@ async def aggregate(
     start = start or end - timedelta(weeks=8) + timedelta(days=1)
     if not 0 <= (end - start).days <= MAX_DAYS:
         raise HTTPException(422, f"Rentang tanggal harus 1–{MAX_DAYS + 1} hari.")
+    if kelurahan is not None and await session.get(Kelurahan, kelurahan) is None:
+        raise HTTPException(404, "Kelurahan tidak ditemukan.")
+    return await build_aggregate(session, start, end, kelurahan)
 
+
+async def build_aggregate(
+    session: AsyncSession, start: date, end: date, kel: int | None = None
+) -> Aggregate:
+    """Seluruh isi dasbor kota; juga dipakai laporan mingguan (jobs). k ≥ MIN_CELL di setiap sel."""
     by_kel: dict[int, list[int]] = {}
-    for kel_id, rank, n in await session.execute(_per_user_levels(start, end)):
+    for kel_id, rank, n in await session.execute(_per_user_levels(start, end, kel)):
         if kel_id is not None:
             by_kel.setdefault(kel_id, [0, 0, 0, 0])[rank] += n
     kelurahan = []
-    for kel in (await session.execute(select(Kelurahan).order_by(Kelurahan.name))).scalars():
-        counts = by_kel.get(kel.id, [0, 0, 0, 0])
+    query = select(Kelurahan).order_by(Kelurahan.name)
+    for k in (await session.execute(query.where(Kelurahan.id == kel) if kel else query)).scalars():
+        counts = by_kel.get(k.id, [0, 0, 0, 0])
         users = sum(counts)
         if users < MIN_CELL:
             kelurahan.append(
-                KelurahanStat(id=kel.id, name=kel.name, users=None, risk_pct=None, levels=None)
+                KelurahanStat(id=k.id, name=k.name, users=None, risk_pct=None, levels=None)
             )
             continue
         levels = {lv: _pct(n, users) for lv, n in zip(LEVELS, counts, strict=True)}
         levels[RiskLevel.hijau] = 100 - sum(v for lv, v in levels.items() if lv != RiskLevel.hijau)
         kelurahan.append(
             KelurahanStat(
-                id=kel.id,
-                name=kel.name,
+                id=k.id,
+                name=k.name,
                 users=users,
                 risk_pct=_pct(counts[2] + counts[3], users),
                 levels=levels,
@@ -263,8 +307,8 @@ async def aggregate(
         end=end,
         min_cell=MIN_CELL,
         demo=settings.demo_mode,
-        kpis=await _kpis(session, start, end, active) if active >= MIN_CELL else None,
+        kpis=await _kpis(session, start, end, active, kel) if active >= MIN_CELL else None,
         kelurahan=kelurahan,
-        trend=await _trend(session, start, end),
-        topics=await _topics(session, start, end),
+        trend=await _trend(session, start, end, kel),
+        topics=await _topics(session, start, end, kel),
     )

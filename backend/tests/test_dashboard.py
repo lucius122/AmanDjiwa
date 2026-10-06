@@ -147,3 +147,18 @@ async def test_rejects_bad_range(client: AsyncClient) -> None:
     h = await _staff(client, Role.admin_kota)
     r = await client.get("/dashboard/aggregate?from=2026-10-05&to=2026-10-01", headers=h)
     assert r.status_code == 422
+
+
+async def test_kelurahan_filter_keeps_k_anonymity(client: AsyncClient) -> None:
+    await _teens(KROBOKAN, [H] * 8 + [M] * 2, journal=[Emotion.senang] * 10)
+    await _teens(MANYARAN, [M] * 9, journal=[Emotion.sedih] * 9)
+    h = await _staff(client, Role.admin_kota)
+    krobokan = (await client.get(f"/dashboard/aggregate?kelurahan={KROBOKAN}", headers=h)).json()
+    assert [k["id"] for k in krobokan["kelurahan"]] == [KROBOKAN]
+    assert krobokan["kpis"]["active_users"] == 10
+    assert krobokan["trend"][-1]["pct"]["senang"] == 100  # jurnal Manyaran tidak ikut
+    manyaran = (await client.get(f"/dashboard/aggregate?kelurahan={MANYARAN}", headers=h)).json()
+    assert manyaran["kpis"] is None and manyaran["kelurahan"][0]["users"] is None
+    assert all(w["pct"] is None for w in manyaran["trend"])
+    r = await client.get("/dashboard/aggregate?kelurahan=9999", headers=h)
+    assert r.status_code == 404
