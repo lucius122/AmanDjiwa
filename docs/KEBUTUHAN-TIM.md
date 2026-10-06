@@ -62,14 +62,20 @@ sintetis**.
 
 ---
 
+- [ ] **4b. Nyalakan lagi kode authenticator staf** (`STAFF_TOTP=true`). Dimatikan dulu untuk
+  demo (keputusan 2026-10-06). Staf bisa membuka isi chat remaja, jadi wajib menyala sebelum ada
+  data sungguhan.
+
 ## B. Untuk deploy ke server
 
 - [ ] **5. Hosting:** akun **Railway** (backend + Postgres + Redis) dan **Vercel** (frontend),
   keduanya disambungkan ke repo GitHub `lucius122/AmanDjiwa`. Langkahnya ada di README
   ("Deploy: Vercel + Railway"). Alternatif: VPS + domain dengan Docker Compose.
-- [ ] **6. Akun SMTP** (mis. Gmail + Sandi aplikasi, atau Brevo) untuk email izin orang tua,
-  link reset password remaja, peringatan kasus merah, dan laporan mingguan.
-  - Yang dibutuhkan: host, port, user, password, alamat pengirim → variabel `SMTP_*` di Railway.
+- [ ] **6. Akun Brevo** (gratis, brevo.com) untuk email izin orang tua, link reset password
+  remaja, peringatan kasus merah, dan laporan mingguan. Railway paket Hobby/Trial memblokir SMTP
+  keluar (sudah dicek: port 587/465/25 timeout), jadi Gmail SMTP tidak bisa dipakai dari sana.
+  - Yang dibutuhkan: API key → `BREVO_API_KEY`, dan alamat pengirim yang sudah diverifikasi di
+    Brevo → `SMTP_FROM` di Railway.
   - Tanpa SMTP, remaja di bawah 18 tahun tidak bisa menyelesaikan pendaftaran (email wali gagal).
 - [ ] **7. Admin kota pertama:** isi `BOOTSTRAP_ADMIN_EMAIL` dan `BOOTSTRAP_ADMIN_PASSWORD`
   (sementara) di Railway; akun dibuat otomatis saat backend menyala. Pendamping, konselor, dan

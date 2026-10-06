@@ -47,6 +47,9 @@ class Settings(BaseSettings):
     smtp_user: str = ""
     smtp_password: str = ""
     smtp_from: str = "AmanDjiwa <no-reply@amandjiwa.local>"
+    # Railway (paket Hobby/Trial) memblokir SMTP keluar. Diisi → email dikirim lewat API HTTPS
+    # Brevo; pengirimnya SMTP_FROM, dan alamat itu harus terverifikasi di Brevo. Kosong = SMTP.
+    brevo_api_key: str = ""
 
     @field_validator("database_url")
     @classmethod

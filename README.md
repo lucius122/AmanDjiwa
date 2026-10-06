@@ -130,8 +130,10 @@ browser hanya bicara ke satu domain (tanpa CORS).
    - `DATABASE_URL` = `${{Postgres.DATABASE_URL}}`, `REDIS_URL` = `${{Redis.REDIS_URL}}`
    - `MESSAGE_ENC_KEY`, `JWT_SECRET` (buat baru, jangan pakai milik laptop)
    - `FRONTEND_ORIGIN` = URL Vercel (mis. `https://amandjiwa.vercel.app`)
-   - SMTP asli untuk email izin wali, reset password, dan peringatan merah: `SMTP_HOST`,
-     `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` (mis. Gmail + Sandi aplikasi)
+   - Email izin wali, reset password, dan peringatan merah: Railway paket Hobby/Trial
+     **memblokir SMTP keluar**, jadi pakai `BREVO_API_KEY` (API HTTPS Brevo, gratis 300 email/hari)
+     + `SMTP_FROM` = alamat yang sudah diverifikasi di Brevo (Senders). SMTP biasa (`SMTP_HOST`,
+     `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`) hanya jalan di Railway Pro atau VPS.
    - `PORT` = `8000` (supaya port aplikasi pasti sama dengan target port domain)
    - admin kota pertama: `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_PASSWORD` (sementara, ≥ 12
      karakter), opsional `BOOTSTRAP_ADMIN_NAME`. Dibuat otomatis saat start **hanya kalau belum ada
