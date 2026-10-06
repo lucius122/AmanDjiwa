@@ -26,6 +26,7 @@ def skeleton(text: str) -> str:
 _SLANG: dict[str, list[str]] = {skeleton(k): skeleton(v).split() for k, v in _cfg["slang"].items()}
 _EMOJI: dict[str, str] = _cfg["emoji"]
 _FUZZY: list[str] = [skeleton(w) for w in _cfg["fuzzy_targets"]]
+_NOT_FUZZY: set[str] = {skeleton(w) for w in _cfg["fuzzy_exclude"]}
 _LEET = str.maketrans({"4": "a", "@": "a", "3": "e", "1": "i", "!": "i", "0": "o", "5": "s",
                        "$": "s", "7": "t"})  # fmt: skip
 
@@ -64,7 +65,7 @@ def _canonical(word: str) -> list[str]:
     word = skeleton(word)
     if word in _SLANG:
         return _SLANG[word]
-    if len(word) >= 5:
+    if len(word) >= 5 and word not in _NOT_FUZZY:
         close = difflib.get_close_matches(word, _FUZZY, n=1, cutoff=0.8)
         if close:
             return [close[0]]
@@ -77,6 +78,7 @@ def _raw_tokens(text: str) -> list[str]:
         text = text.replace(emoji, f" {word} ")
     out: list[str] = []
     for chunk in text.lower().replace("'", "").replace("’", "").split():
+        chunk = chunk.rstrip("!")  # "capek!" = tanda baca, bukan leet "capeki"
         if re.search(r"[a-z]", chunk) and re.search(r"[0-9@$!*]", chunk):
             chunk = re.sub(r"([a-z]+)2\b", r"\1 \1", chunk)  # teman2 → teman teman
             chunk = chunk.translate(_LEET).replace("*", "")  # m4ti → mati, b*nuh → bnuh

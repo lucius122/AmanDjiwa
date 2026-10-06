@@ -66,8 +66,10 @@ categories:
     - gantung diri
     - (lompat|tabrakkan) ... (jembatan|gedung|atap|lantai|tebing|apartemen|rel|truk|kereta|mobil|sungai|laut|kali|jurang|waduk|sumur)
     - tabrakkan diri
-    - (minum|telan|nenggak) ... (racun|obat nyamuk|semua obat|obat banyak|pil banyak)
-    - (minum|telan|nenggak) (obat|pil) (sebanyak|banyak|sekaligus|semua|sebotol|segenggam)
+    - (minum|telan|nelen|menelan|nenggak) ... (racun|obat nyamuk|semua obat|semua pil|obat banyak|pil banyak)
+    - (minum|telan|nelen|menelan|nenggak) (obat|pil) (sebanyak|banyak|sekaligus|semua|sebotol|segenggam)
+    # menanyakan jumlah obat "biar ngefek/mati" = sinyal overdosis (red-team 2026-10-06)
+    - (berapa|seberapa banyak) (tablet|butir|pil|kapsul|obat) ... (biar|supaya|agar) ... (ngefek|efek|mati|tidak bangun|tidur selamanya|lewat)
     - (minum|telan|nenggak) ... (cairan pembersih|pembersih lantai|pemutih|bayclin|deterjen|obat serangga|racun tikus|spiritus|bensin)
     - (ingin|mau) ... (racun|overdosis)
     - overdosis
