@@ -19,6 +19,7 @@ router = APIRouter(prefix="/telegram", tags=["telegram"])
 
 class LinkOut(BaseModel):
     code: str
+    bot_username: str
     deep_link: str
     expires_in: int
 
@@ -30,6 +31,7 @@ async def link_token(user: User = Depends(active_teen), r: Redis = Depends(get_r
     code = await create_link_code(r, user.id)
     return LinkOut(
         code=code,
+        bot_username=settings.telegram_bot_username,
         deep_link=f"https://t.me/{settings.telegram_bot_username}?start={code}",
         expires_in=LINK_TTL,
     )

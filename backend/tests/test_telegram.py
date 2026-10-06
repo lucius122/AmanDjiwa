@@ -13,7 +13,7 @@ from app.bot import logic
 from app.models import Case, ChannelLink, RiskLevel
 from app.pipeline import NO_MODELS
 from app.services import auth as auth_mod
-from tests.conftest import TestSession, assent_body, teen_headers
+from tests.conftest import KROBOKAN, TestSession, assent_body, teen_headers
 
 pytestmark = pytest.mark.anyio
 TG_ID = 777001
@@ -36,7 +36,8 @@ async def test_link_code_is_one_time_and_expires(client: AsyncClient, redis_clie
     await client.post("/consent/assent", json=body, headers=h)
     link = (await client.post("/telegram/link-token", headers=h)).json()
     assert re.fullmatch(r"DJW-[A-Z2-9]{6}", link["code"])
-    assert link["deep_link"] == f"https://t.me/AmanDjiwaBot?start={link['code']}"
+    assert link["bot_username"] == "AmanDjiwa_bot"
+    assert link["deep_link"] == f"https://t.me/AmanDjiwa_bot?start={link['code']}"
     assert 0 < await redis_client.ttl(f"tg:link:{link['code']}") <= 15 * 60
     async with TestSession() as s:
         assert "tersambung" in (await logic.on_start(redis_client, s, TG_ID, link["code"]))[0].text
@@ -140,3 +141,29 @@ def test_supabase_jwks_es256_tokens(monkeypatch: pytest.MonkeyPatch) -> None:
     wrong_issuer = jwt.encode(claims | {"iss": "https://lain.supabase.co/auth/v1"}, key, "ES256")
     with pytest.raises(jwt.InvalidTokenError):
         auth_mod.read_supabase_sub(wrong_issuer)
+
+
+async def test_pendamping_greeting_also_goes_to_telegram(
+    client: AsyncClient, redis_client: Redis, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from app.api import cases as cases_api
+    from app.models import Role
+    from tests.conftest import bearer, make_staff, staff_login
+
+    await _linked_teen(client, redis_client)
+    async with TestSession() as s:
+        await logic.on_text(redis_client, s, TG_ID, "aku pengen mati aja", NO_MODELS)
+    sent: list[tuple[int, str]] = []
+
+    async def fake_send(tg_id: int, text: str) -> bool:
+        sent.append((tg_id, text))
+        return False  # gagal kirim pun tidak boleh menggagalkan aksi pendamping
+
+    monkeypatch.setattr(cases_api, "send_text", fake_send)
+    secret = await make_staff(Role.pendamping, KROBOKAN)
+    h = bearer((await staff_login(client, secret))["access_token"])
+    (row,) = (await client.get("/cases", headers=h)).json()
+    r = await client.patch(f"/cases/{row['id']}", json={"action": "contacted"}, headers=h)
+    assert r.status_code == 200
+    assert sent and sent[0][0] == TG_ID
+    assert sent[0][1].startswith("Kak Dimas P. · pendamping\nHai Ombak Tenang, aku Kak Dimas P.")

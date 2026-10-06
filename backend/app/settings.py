@@ -31,7 +31,9 @@ class Settings(BaseSettings):
     # Telegram (§3: aiogram 3, mode webhook). Kosong = bot nonaktif, endpoint webhook 503.
     telegram_bot_token: str = ""
     telegram_webhook_secret: str = ""
-    telegram_bot_username: str = "AmanDjiwaBot"
+    telegram_bot_username: str = (
+        "AmanDjiwa_bot"  # handle dari BotFather (cek: cli telegram-webhook)
+    )
 
     smtp_host: str = "127.0.0.1"
     smtp_port: int = 1025

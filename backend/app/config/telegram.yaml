@@ -11,3 +11,5 @@ skip: Lewati dulu
 stop: Berhenti
 continue: Lanjut
 hotline: "{label}: {number}"
+# Label pesan pendamping (sama dengan bubble web: "Kak Dimas · pendamping").
+pendamping: "{nama} · pendamping"

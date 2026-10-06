@@ -3,6 +3,7 @@
     uv run python -m app.cli create-staff --email ... --role pendamping --kelurahan Krobokan
     uv run python -m app.cli seed-demo     # butuh DEMO_MODE=true; data SINTETIS + 3 akun staf demo
     uv run python -m app.cli reset-demo    # hapus hanya data demo
+    uv run python -m app.cli telegram-webhook [--url URL | --delete]   # produksi (HTTPS)
 
 create-staff meminta password lewat prompt dan mencetak URI otpauth untuk aplikasi authenticator.
 """
@@ -19,6 +20,7 @@ from app.db import SessionLocal
 from app.models import Kelurahan, Role, User
 from app.services.auth import hash_password
 from app.services.crypto import encrypt
+from app.settings import settings
 
 
 async def create_staff(email: str, name: str, role: Role, kelurahan: str | None) -> None:
@@ -60,6 +62,41 @@ async def reset_demo() -> None:
         print(f"Data demo dihapus ({await demo.reset(session)} remaja sintetis).")
 
 
+async def telegram_webhook(url: str | None, remove: bool) -> None:
+    """Daftarkan webhook bot ke backend publik. Default: FRONTEND_ORIGIN + /api/telegram/webhook
+    (tata letak Docker: Caddy meneruskan /api ke backend). --delete = kembali ke mode polling."""
+    from app.bot import get_bot  # aiogram hanya dimuat untuk perintah ini
+
+    bot = get_bot()
+    if bot is None:
+        raise SystemExit("TELEGRAM_BOT_TOKEN belum diisi.")
+    try:
+        me = await bot.me()
+        if me.username != settings.telegram_bot_username:
+            print(
+                f"PERINGATAN: token milik @{me.username}, bukan @{settings.telegram_bot_username}"
+            )
+            print("Isi TELEGRAM_BOT_USERNAME di .env supaya tautan dari web benar.")
+        if remove:
+            await bot.delete_webhook(drop_pending_updates=True)
+            print(f"Webhook @{me.username} dihapus.")
+            return
+        if not settings.telegram_webhook_secret:
+            raise SystemExit("TELEGRAM_WEBHOOK_SECRET belum diisi.")
+        url = url or f"{settings.frontend_origin.rstrip('/')}/api/telegram/webhook"
+        if not url.startswith("https://"):
+            raise SystemExit(f"Webhook Telegram wajib HTTPS: {url}")
+        await bot.set_webhook(
+            url,
+            secret_token=settings.telegram_webhook_secret,
+            allowed_updates=["message", "callback_query"],
+            drop_pending_updates=True,
+        )
+        print(f"Webhook @{me.username} → {url}")
+    finally:
+        await bot.session.close()
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="app.cli")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -70,11 +107,16 @@ def main() -> None:
     p.add_argument("--kelurahan", help="Wajib untuk pendamping")
     sub.add_parser("seed-demo")
     sub.add_parser("reset-demo")
+    w = sub.add_parser("telegram-webhook")
+    w.add_argument("--url", help="Default: FRONTEND_ORIGIN/api/telegram/webhook")
+    w.add_argument("--delete", action="store_true", help="Hapus webhook (untuk mode polling)")
     a = parser.parse_args()
     if a.cmd == "seed-demo":
         asyncio.run(seed_demo())
     elif a.cmd == "reset-demo":
         asyncio.run(reset_demo())
+    elif a.cmd == "telegram-webhook":
+        asyncio.run(telegram_webhook(a.url, a.delete))
     else:
         asyncio.run(create_staff(a.email, a.name, Role(a.role), a.kelurahan))
 

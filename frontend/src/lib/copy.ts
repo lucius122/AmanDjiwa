@@ -6,7 +6,8 @@ export const copy = {
     aman: 'Aman',
     djiwa: 'Djiwa',
     notDiagnosis: 'AmanDjiwa bukan alat diagnosis.',
-    botUrl: 'https://t.me/AmanDjiwaBot',
+    botUrl: 'https://t.me/AmanDjiwa_bot',
+    botHandle: '@AmanDjiwa_bot', // handle asli dari BotFather (desain: @AmanDjiwaBot)
   },
 
   login: {

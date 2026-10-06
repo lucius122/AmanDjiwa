@@ -20,7 +20,9 @@ export function TelegramSheet({ open, onClose }: { open: boolean; onClose: () =>
         <SheetHeader id="tg-title" title={copy.telegram.title} onClose={onClose} />
         <div className="text-14 leading-155 text-muted">{copy.telegram.lead}</div>
         <div className="flex flex-col items-center gap-4 rounded-14 bg-sky-100 p-16">
-          <span className="text-13 font-semibold text-muted-strong">@AmanDjiwaBot</span>
+          <span className="text-13 font-semibold text-muted-strong">
+            {link ? `@${link.bot_username}` : copy.brand.botHandle}
+          </span>
           {/* DESIGN-GAP: state loading & gagal tidak ada di desain */}
           <span className="text-28 font-extrabold tracking-wider">{link?.code ?? copy.telegram.loading}</span>
           {failed && <span className="text-13 font-semibold text-warn-text">{copy.telegram.failed}</span>}

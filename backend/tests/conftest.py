@@ -24,6 +24,8 @@ os.environ["SUPABASE_SERVICE_ROLE_KEY"] = ""
 # Tes tidak pernah memanggil LLM sungguhan; test_llm memakai tiruan.
 os.environ["NVIDIA_API_KEY"] = ""
 os.environ["DEMO_MODE"] = "false"  # test_demo menyalakannya sendiri
+os.environ["TELEGRAM_BOT_TOKEN"] = ""  # tes tidak pernah memanggil API Telegram sungguhan
+os.environ["TELEGRAM_WEBHOOK_SECRET"] = ""
 os.environ["REDIS_URL"] = REDIS_URL = os.environ.get("TEST_REDIS_URL", "redis://127.0.0.1:6379/15")
 
 import jwt  # noqa: E402

@@ -4,7 +4,7 @@
 
 ## 1. Konteks
 
-AmanDjiwa adalah sistem skrining dini risiko kesehatan mental untuk remaja (13–19 tahun) di Kecamatan Semarang Barat, untuk Hackathon USM Smart City Deeptech 2026. Chatbot-nya bernama **Djiwa** (Telegram: `@AmanDjiwaBot`). *(Keputusan 2026-10-05: ikut desain, bukan "Ayem".)*
+AmanDjiwa adalah sistem skrining dini risiko kesehatan mental untuk remaja (13–19 tahun) di Kecamatan Semarang Barat, untuk Hackathon USM Smart City Deeptech 2026. Chatbot-nya bernama **Djiwa** (Telegram: `@AmanDjiwa_bot` — handle asli dari BotFather, 2026-10-06; desain menulis `@AmanDjiwaBot`). *(Keputusan 2026-10-05: ikut desain, bukan "Ayem".)*
 
 Sistem ini **alat bantu skrining, BUKAN alat diagnosis**. Keselamatan pengguna lebih penting daripada fitur, kecepatan, atau estetika.
 

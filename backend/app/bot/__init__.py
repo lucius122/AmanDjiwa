@@ -1,5 +1,7 @@
 """Kabel aiogram 3 (CLAUDE.md §3). Logika ada di bot/logic.py; di sini hanya I/O Telegram."""
 
+import asyncio
+import logging
 from functools import cache
 
 from aiogram import Bot, Dispatcher, F, Router
@@ -13,7 +15,11 @@ from app.pipeline import default_models
 from app.redis import redis
 from app.settings import settings
 
+log = logging.getLogger(__name__)
 router = Router()
+# Hanya chat pribadi: di grup, pesan orang lain ikut masuk pipeline & bisa menautkan akun salah.
+router.message.filter(F.chat.type == "private")
+router.callback_query.filter(F.message.chat.type == "private")
 
 
 def _markup(msg: OutMsg) -> InlineKeyboardMarkup | None:
@@ -69,3 +75,17 @@ dispatcher.include_router(router)
 @cache
 def get_bot() -> Bot | None:
     return Bot(settings.telegram_bot_token) if settings.telegram_bot_token else None
+
+
+async def send_text(telegram_id: int, text: str) -> bool:
+    """Kirim pesan proaktif (mis. sapaan pendamping). Gagal (diblokir, jaringan) tidak boleh
+    menggagalkan aksi pemanggil; log hanya jenis error (§7)."""
+    bot = get_bot()
+    if bot is None:
+        return False
+    try:
+        await asyncio.wait_for(bot.send_message(telegram_id, text), timeout=5)
+        return True
+    except Exception as e:  # noqa: BLE001
+        log.warning("telegram_send_failed error=%s", type(e).__name__)
+        return False

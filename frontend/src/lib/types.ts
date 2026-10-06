@@ -89,6 +89,7 @@ export type ChatAction = 'answer' | 'skip' | 'stop' | 'continue' | 'connect';
 
 export interface TelegramLink {
   code: string;
+  bot_username: string;
   deep_link: string;
   expires_in: number;
 }

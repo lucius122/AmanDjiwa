@@ -4,8 +4,12 @@ uv run python -m app.bot.polling
 """
 
 import asyncio
+import logging
 
 from app.bot import dispatcher, get_bot
+
+# aiogram hanya mencatat id update & durasi, bukan isi pesan (§7).
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
 
 
 async def main() -> None:

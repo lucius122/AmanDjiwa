@@ -18,6 +18,8 @@ from sqlalchemy import Select, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import case_scope, current_staff
+from app.bot import send_text
+from app.bot.logic import TG
 from app.db import get_session
 from app.dialog import mark_connected
 from app.models import (
@@ -25,6 +27,7 @@ from app.models import (
     CaseNote,
     CaseStatus,
     Channel,
+    ChannelLink,
     Emotion,
     FollowUp,
     Instrument,
@@ -348,15 +351,15 @@ async def update_case(
 
     teen = await session.get(User, case.user_id)
     assert teen is not None
-    if greet_teen:
-        await _greet(session, staff, teen, case)
+    greeting = await _greet(session, staff, teen, case) if greet_teen else None
     await session.commit()
-    if greet_teen:
+    if greeting:
         await mark_connected(r, teen.id)
+        await _greet_telegram(session, staff, teen, greeting)
     return await get_case(case.id, staff, session)
 
 
-async def _greet(session: AsyncSession, staff: User, teen: User, case: Case) -> None:
+async def _greet(session: AsyncSession, staff: User, teen: User, case: Case) -> str:
     """ "Sapaan otomatis" dari bank respons ke chat remaja, atas nama staf (bukan bot)."""
     kel = await session.get(Kelurahan, case.kelurahan_id)
     key = "pendamping_greeting" if staff.role == Role.pendamping else "konselor_greeting"
@@ -367,7 +370,18 @@ async def _greet(session: AsyncSession, staff: User, teen: User, case: Case) -> 
     )
     conv = await store.conversation_for(session, teen, Channel.web)
     await store.save_message(session, conv, Sender.pendamping, text, author_id=staff.id)
-    # TODO: kirim juga lewat bot Telegram kalau remaja menautkan akun (bot belum aktif).
+    return text
+
+
+async def _greet_telegram(session: AsyncSession, staff: User, teen: User, text: str) -> None:
+    """Remaja yang menautkan Telegram juga menerima sapaan di sana (setelah commit; gagal kirim
+    tidak membatalkan apa pun — sapaan tetap ada di chat web)."""
+    tg_id = (
+        await session.execute(select(ChannelLink.telegram_id).where(ChannelLink.user_id == teen.id))
+    ).scalar_one_or_none()
+    if tg_id is not None:
+        label = TG["pendamping"].format(nama=staff.display_name or "Kakak pendamping")
+        await send_text(tg_id, label + "\n" + text)
 
 
 @router.post("/cases/{case_id}/notes", status_code=201)
