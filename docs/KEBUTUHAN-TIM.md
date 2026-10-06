@@ -72,10 +72,9 @@ sintetis**.
   mingguan.
   - Yang dibutuhkan: host, port, user, password, alamat pengirim.
   - Atur SPF/DKIM domain supaya tidak masuk spam.
-- [ ] **7. Supabase:**
-  - Site URL & Redirect URL = `https://domainmu/mulai`;
-  - template email OTP berbahasa Indonesia;
-  - kalau login Google dipakai: Client ID/Secret Google OAuth.
+- [ ] **7. Supabase:** isi `GOOGLE_CLIENT_ID/SECRET` dan `AUTH_SMTP_*` di `.env`, lalu jalankan
+  `uv run python -m app.cli supabase-auth --site-url https://domainmu` (lihat README). Perintah itu
+  memasang template email kode OTP berbahasa Indonesia, Site/Redirect URL, SMTP, dan login Google.
 - [ ] **8. Kontak tim** untuk email & halaman persetujuan orang tua (sekarang tertulis
   "[ kontak ]"): `backend/app/config/emails.yaml` (`contact`) dan `frontend/src/lib/copy.ts`.
 - [ ] **9. Daftar staf asli:** nama tampil, email, peran (pendamping/konselor/admin kota), dan

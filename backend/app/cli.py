@@ -5,6 +5,7 @@
     uv run python -m app.cli reset-demo    # hapus hanya data demo
     uv run python -m app.cli kode-demo pendamping   # kode 6 digit akun staf DEMO (tanpa HP)
     uv run python -m app.cli telegram-webhook [--url URL | --delete]   # produksi (HTTPS)
+    uv run python -m app.cli supabase-auth [--site-url URL]   # template OTP, redirect, SMTP, Google
 
 create-staff meminta password lewat prompt dan mencetak URI otpauth untuk aplikasi authenticator.
 """
@@ -119,6 +120,8 @@ def main() -> None:
     w = sub.add_parser("telegram-webhook")
     w.add_argument("--url", help="Default: FRONTEND_ORIGIN/api/telegram/webhook")
     w.add_argument("--delete", action="store_true", help="Hapus webhook (untuk mode polling)")
+    sa = sub.add_parser("supabase-auth", help="Atur Supabase Auth (OTP email, redirect, Google)")
+    sa.add_argument("--site-url", help="Default: FRONTEND_ORIGIN, mis. http://localhost:5173")
     a = parser.parse_args()
     if a.cmd == "seed-demo":
         asyncio.run(seed_demo())
@@ -126,6 +129,10 @@ def main() -> None:
         asyncio.run(reset_demo())
     elif a.cmd == "kode-demo":
         asyncio.run(demo_code(Role(a.role)))
+    elif a.cmd == "supabase-auth":
+        from app.supabase_setup import run
+
+        run(a.site_url)
     elif a.cmd == "telegram-webhook":
         asyncio.run(telegram_webhook(a.url, a.delete))
     else:

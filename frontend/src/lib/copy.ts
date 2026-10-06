@@ -30,6 +30,10 @@ export const copy = {
     otpWrong: 'Kodenya belum cocok. Cek lagi ya, atau kirim ulang kode.',
     failed: 'Lagi ada gangguan. Coba lagi sebentar ya.',
     notConfigured: 'Login belum dikonfigurasi (isi VITE_SUPABASE_URL & VITE_SUPABASE_ANON_KEY).',
+    rateLimited: 'Terlalu sering minta kode. Tunggu beberapa menit, lalu coba lagi ya.',
+    emailNotAllowed: 'Kode belum bisa dikirim ke email ini. Coba lagi nanti atau masuk dengan Google ya.',
+    googleOff: 'Masuk dengan Google belum tersedia. Pakai kode email dulu ya.',
+    googleFailed: 'Masuk dengan Google belum berhasil. Coba lagi atau pakai kode email ya.',
   },
 
   nav: { chat: 'Ngobrol', jurnal: 'Jurnal', aku: 'Aku' },

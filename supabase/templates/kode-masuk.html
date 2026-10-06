@@ -1,0 +1,16 @@
+<!--
+  Template email kode masuk remaja (Supabase Auth: "Magic Link" DAN "Confirm signup").
+  Dipasang otomatis oleh: cd backend && uv run python -m app.cli supabase-auth
+  {{ .Token }} = kode 6 digit dari Supabase. DESIGN-GAP: tidak ada di design/. TODO_VERIFY: review tim.
+  Sengaja tanpa kata "kesehatan mental" / "konseling": email bisa terbaca di perangkat bersama.
+-->
+<div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; color: #1e3a5f; background: #faf8f5;">
+  <p style="margin: 0 0 4px; font-size: 20px; font-weight: bold;">Aman<span style="color: #1ba39c;">Djiwa</span></p>
+  <p style="margin: 16px 0 8px; font-size: 16px;">Hai! Ini kode masuk kamu:</p>
+  <p style="margin: 0 0 16px; font-size: 32px; font-weight: bold; letter-spacing: 6px;">{{ .Token }}</p>
+  <p style="margin: 0 0 8px; font-size: 14px; line-height: 1.5;">
+    Kode berlaku 10 menit dan cuma bisa dipakai sekali. Jangan kasih kode ini ke siapa pun,
+    termasuk yang mengaku dari tim AmanDjiwa.
+  </p>
+  <p style="margin: 0; font-size: 13px; color: #4a5d78;">Kalau kamu nggak merasa minta kode, abaikan saja email ini.</p>
+</div>

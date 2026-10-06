@@ -76,6 +76,22 @@ uv run python -m app.cli create-staff --email nama@contoh.id --name "Kak Dimas P
 #   --role: pendamping (wajib --kelurahan) | konselor | admin_kota
 ```
 
+## Login remaja: kode OTP email & Google (Supabase)
+
+Template email kode OTP ada di [supabase/templates/kode-masuk.html](supabase/templates/kode-masuk.html).
+Pasang template itu, Site URL & Redirect URL, serta (kalau sudah diisi di `.env`) SMTP sendiri dan
+login Google ke proyek Supabase dengan satu perintah:
+
+```bash
+cd backend
+uv run python -m app.cli supabase-auth                         # dev: http://localhost:5173
+uv run python -m app.cli supabase-auth --site-url https://domainmu   # produksi
+```
+
+Perintah meminta *personal access token* Supabase (supabase.com/dashboard/account/tokens). Token
+tidak disimpan; cabut lagi setelah dipakai. Tanpa SMTP sendiri, Supabase hanya mengirim kode ke
+email anggota tim proyek dan dibatasi beberapa email per jam.
+
 ## Demo hackathon (data sintetis)
 
 ```bash

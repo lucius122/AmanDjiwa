@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Navigate, useOutletContext } from 'react-router';
 import { AppShell } from '../components/AppShell';
 import { GATE_ROUTE, useGate } from '../lib/me';
@@ -7,8 +8,15 @@ import { Chat } from './Chat';
 import { Jurnal } from './Jurnal';
 
 /** /mulai: arahkan ke langkah berikutnya sesuai status (dipakai tombol "Mulai ngobrol" & "Masuk"). */
+const OAUTH_FAILED = { oauthFailed: true } as const;
+
 export function Start() {
   const gate = useGate();
+  // Login Google batal/gagal: Supabase kembali ke /mulai?error=… → pesan di halaman masuk.
+  // Dibaca sekali saat mount: selama transisi ke /masuk komponen ini masih dirender ulang
+  // dengan URL yang sudah berubah, dan Navigate kedua (tanpa state) akan menimpa yang pertama.
+  const [oauthFailed] = useState(() => /[?&#]error=/.test(window.location.search + window.location.hash));
+  if (oauthFailed) return <Navigate to="/masuk" replace state={OAUTH_FAILED} />;
   if (gate.state === 'loading') return null; // DESIGN-GAP: layar loading awal belum ada di desain
   return <Navigate to={GATE_ROUTE[gate.state]} replace />;
 }
