@@ -14,6 +14,7 @@ import { copy } from '../lib/copy';
 import type { ChatAction, ChatTurn, History, Me, MessageKind, ScreeningQuestion, Sender } from '../lib/types';
 
 const t = copy.chat;
+const COLUMN = 'mx-auto flex w-full max-w-820';
 const CHIP = 'h-40 flex-none rounded-full border-1.5 border-teal-200 bg-white px-14 text-14 font-semibold hover:bg-teal-100';
 
 interface Item {
@@ -108,86 +109,92 @@ export function Chat({ me }: { me: Me }) {
 
   const hotlines = history.data?.hotlines ?? [];
   return (
-    <div className="mx-auto flex min-h-0 w-full max-w-820 flex-1 flex-col">
-      <header className="flex flex-none flex-wrap items-center gap-10 border-b border-sand-200 bg-white py-10 pl-16 pr-12">
-        <div className="flex shrink grow basis-200 items-center gap-12">
-          <DjiwaAvatar />
-          <div className="flex flex-1 flex-col gap-2">
-            <div className="text-16 font-extrabold">{t.name}</div>
-            <div className="flex items-center gap-6 text-12 text-muted">
-              <span className="h-8 w-8 rounded-full bg-teal-500" />
-              {typing ? t.typing : t.online}
+    // Penyimpangan desain (disetujui 2026-10-06): header, area pesan, dan kolom ketik selebar layar
+    // supaya di desktop bisa scroll dari mana saja; isinya tetap kolom 820px seperti desain.
+    <div className="flex min-h-0 w-full flex-1 flex-col">
+      <header className="flex-none border-b border-sand-200 bg-white">
+        <div className={`${COLUMN} flex-wrap items-center gap-10 py-10 pl-16 pr-12`}>
+          <div className="flex shrink grow basis-200 items-center gap-12">
+            <DjiwaAvatar />
+            <div className="flex flex-1 flex-col gap-2">
+              <div className="text-16 font-extrabold">{t.name}</div>
+              <div className="flex items-center gap-6 text-12 text-muted">
+                <span className="h-8 w-8 rounded-full bg-teal-500" />
+                {typing ? t.typing : t.online}
+              </div>
             </div>
           </div>
-        </div>
-        <div className="flex flex-auto justify-end gap-8">
-          <button
-            type="button"
-            onClick={() => setSheet('help')}
-            className="flex h-40 max-w-260 flex-auto items-center justify-center gap-6 rounded-full bg-peach-100 px-14 text-13 font-bold text-peach-800 hover:bg-peach-200"
-          >
-            <Icon name="phone" className="h-16 w-16 stroke-peach-600" strokeWidth={2} />
-            {t.help}
-          </button>
-          <button
-            type="button"
-            onClick={() => setSheet('tg')}
-            className="flex h-40 items-center gap-6 rounded-full bg-sky-100 px-14 text-13 font-bold hover:bg-sky-200"
-          >
-            <Icon name="telegram" className="h-16 w-16 stroke-navy" strokeWidth={2} />
-            {t.telegram}
-          </button>
+          <div className="flex flex-auto justify-end gap-8">
+            <button
+              type="button"
+              onClick={() => setSheet('help')}
+              className="flex h-40 max-w-260 flex-auto items-center justify-center gap-6 rounded-full bg-peach-100 px-14 text-13 font-bold text-peach-800 hover:bg-peach-200"
+            >
+              <Icon name="phone" className="h-16 w-16 stroke-peach-600" strokeWidth={2} />
+              {t.help}
+            </button>
+            <button
+              type="button"
+              onClick={() => setSheet('tg')}
+              className="flex h-40 items-center gap-6 rounded-full bg-sky-100 px-14 text-13 font-bold hover:bg-sky-200"
+            >
+              <Icon name="telegram" className="h-16 w-16 stroke-navy" strokeWidth={2} />
+              {t.telegram}
+            </button>
+          </div>
         </div>
       </header>
 
-      <div ref={list} className="flex min-h-0 flex-1 flex-col gap-10 overflow-y-auto px-16 py-18">
-        <div className="self-center text-12 font-semibold text-muted">{t.today}</div>
-        {history.isPending && <TypingIndicator label={t.typingLong} />}
-        {history.isError && (
-          // DESIGN-GAP: state gagal memuat tidak ada di desain
-          <div className="flex flex-col items-center gap-8 self-center text-14 text-muted">
-            {t.loadFailed}
-            <button type="button" className={CHIP} onClick={() => void history.refetch()}>
-              {t.retry}
+      <div ref={list} className="min-h-0 flex-1 overflow-y-auto">
+        <div className={`${COLUMN} flex-col gap-10 px-16 py-18`}>
+          <div className="self-center text-12 font-semibold text-muted">{t.today}</div>
+          {history.isPending && <TypingIndicator label={t.typingLong} />}
+          {history.isError && (
+            // DESIGN-GAP: state gagal memuat tidak ada di desain
+            <div className="flex flex-col items-center gap-8 self-center text-14 text-muted">
+              {t.loadFailed}
+              <button type="button" className={CHIP} onClick={() => void history.refetch()}>
+                {t.retry}
+              </button>
+            </div>
+          )}
+          {items.map((m) =>
+            m.kind === 'crisis_card' && history.data ? (
+              <CrisisCard
+                key={m.key}
+                card={history.data.card}
+                hotline={hotlines[0]}
+                connected={connected}
+                onCall={dial}
+                onConnect={connect}
+              />
+            ) : (
+              <ChatBubble key={m.key} sender={m.sender}>
+                {m.sender === 'pendamping' ? `${t.pendamping(m.author)}\n${m.text}` : m.text}
+              </ChatBubble>
+            ),
+          )}
+          {offerConnect && (
+            // DESIGN-GAP: tawaran pendamping di luar kartu krisis memakai gaya chip.
+            <button type="button" className={`${CHIP} self-start`} onClick={connect}>
+              {t.connectOffer}
             </button>
-          </div>
-        )}
-        {items.map((m) =>
-          m.kind === 'crisis_card' && history.data ? (
-            <CrisisCard
-              key={m.key}
-              card={history.data.card}
-              hotline={hotlines[0]}
-              connected={connected}
-              onCall={dial}
-              onConnect={connect}
+          )}
+          {question && (
+            <ScreeningCard
+              q={question}
+              busy={typing}
+              onAnswer={(v) => act('answer', v, question.options[v])}
+              onSkip={() => act('skip', null, 'Lewati')}
+              onStop={() => act('stop')}
             />
-          ) : (
-            <ChatBubble key={m.key} sender={m.sender}>
-              {m.sender === 'pendamping' ? `${t.pendamping(m.author)}\n${m.text}` : m.text}
-            </ChatBubble>
-          ),
-        )}
-        {offerConnect && (
-          // DESIGN-GAP: tawaran pendamping di luar kartu krisis memakai gaya chip.
-          <button type="button" className={`${CHIP} self-start`} onClick={connect}>
-            {t.connectOffer}
-          </button>
-        )}
-        {question && (
-          <ScreeningCard
-            q={question}
-            busy={typing}
-            onAnswer={(v) => act('answer', v, question.options[v])}
-            onSkip={() => act('skip', null, 'Lewati')}
-            onStop={() => act('stop')}
-          />
-        )}
-        {followup && <FollowupCard busy={typing} onContinue={() => act('continue')} onStop={() => act('stop')} />}
-        {typing && <TypingIndicator label={t.typingLong} />}
+          )}
+          {followup && <FollowupCard busy={typing} onContinue={() => act('continue')} onStop={() => act('stop')} />}
+          {typing && <TypingIndicator label={t.typingLong} />}
+        </div>
       </div>
 
-      <div className="flex flex-none flex-col gap-10 px-12 pb-12 pt-8">
+      <div className={`${COLUMN} flex-none flex-col gap-10 px-12 pb-12 pt-8`}>
         <div className="flex gap-8 overflow-x-auto pb-2">
           {t.chips.map((label) => (
             <button key={label} type="button" className={CHIP} onClick={() => chip(label)}>

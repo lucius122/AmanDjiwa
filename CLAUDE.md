@@ -26,7 +26,7 @@ Pengguna dan peran (RBAC):
 - Kalau ada layar atau state yang tidak ada di `design/` (misalnya error, loading, atau empty state), turunkan dari komponen yang sudah ada dan beri catatan `// DESIGN-GAP:` supaya bisa direview.
 - Data dummy di HTML diganti dengan data dari API. Teks UI tetap Bahasa Indonesia, sapaan "kamu".
 - Warna level risiko (hijau/kuning/oranye/merah) **hanya** boleh muncul di dasbor pendamping/konselor/kota, **TIDAK PERNAH** di halaman yang dilihat remaja.
-- Penyimpangan desain yang sudah disetujui (2026-10-06): langkah 1 onboarding memakai email + password (bukan kode OTP + Google), ditambah halaman lupa/atur ulang password dan halaman "Akun staf" di dasbor kota.
+- Penyimpangan desain yang sudah disetujui (2026-10-06): langkah 1 onboarding memakai email + password (bukan kode OTP + Google), ditambah halaman lupa/atur ulang password dan halaman "Akun staf" di dasbor kota. Di desktop, bilah header, area pesan, dan kolom ketik halaman Ngobrol dibuat selebar layar (isinya tetap kolom 820px) supaya bisa scroll dari mana saja.
 - Penyimpangan desain yang sudah disetujui (2026-10-05): placeholder ilustrasi diganti ilustrasi SVG flat (warna token); placeholder logo mitra diganti nama organisasi sebagai teks sampai ada file logo resmi; landing ditambah satu CTA penutup sebelum footer.
 
 ## 3. Tech stack (FIXED — jangan diganti)
