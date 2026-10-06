@@ -280,6 +280,11 @@ export const copy = {
     save: 'Simpan jurnal',
     update: 'Perbarui jurnal',
     saved: 'Jurnal hari ini tersimpan',
+    // DESIGN-GAP: ringkasan jurnal hari ini (sudah diisi lewat popup Ngobrol) tidak ada di desain.
+    todayLabel: 'Suasana hatimu hari ini',
+    edit: 'Ubah',
+    cancel: 'Batal',
+    editHint: 'Masih bisa kamu ubah sampai hari ini berakhir.',
     historyTitle: '14 hari terakhir',
     notFilled: 'Belum diisi',
     insightCemas: 'Belakangan kamu lebih sering ngerasa cemas. Itu wajar. Mau coba latihan napas?',

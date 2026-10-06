@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { BreathingSheet } from '../components/BreathingSheet';
-import { EMOTIONS, TILE_OF } from '../components/Emotion';
+import { Button } from '../components/Button';
+import { EMOTIONS, EmotionFace, TILE_OF } from '../components/Emotion';
 import { GroundingSheet } from '../components/GroundingSheet';
 import { HelpSheet, useConnectFromOutside, useDial } from '../components/HelpSheet';
 import { Icon } from '../components/Icon';
@@ -33,6 +34,30 @@ function insightOf(entries: JournalEntry[]): string {
   return top === 'cemas' ? t.insightCemas : t.insightTop(t.emotions[top]);
 }
 
+/** Jurnal hari ini yang sudah terekam (mis. dari popup Ngobrol) + tombol Ubah. */
+function TodayMood({ entry, onEdit }: { entry: JournalEntry; onEdit: () => void }) {
+  const emo = EMOTIONS.find((e) => e.key === entry.emotion) ?? EMOTIONS[EMOTIONS.length - 1];
+  return (
+    <div className="flex flex-col gap-14 rounded-16 border border-sand-200 bg-white p-16">
+      <div className="flex items-center gap-14">
+        <span className={`flex h-56 w-56 flex-none items-center justify-center rounded-16 ${emo.tile}`}>
+          <EmotionFace face={emo.face} d={emo.d} />
+        </span>
+        <span className="flex flex-1 flex-col gap-2">
+          <span className="text-12 font-semibold text-muted">{t.todayLabel}</span>
+          <span className="text-18 font-extrabold">{t.emotions[entry.emotion]}</span>
+          <span className="text-13 font-bold text-teal-600">{t.intensity[entry.intensity - 1]}</span>
+        </span>
+      </div>
+      {entry.note && <p className="m-0 whitespace-pre-wrap rounded-12 bg-cream p-12 text-14 leading-150">{entry.note}</p>}
+      <Button variant="outline" onClick={onEdit}>
+        {t.edit}
+      </Button>
+      <span className="text-12 text-muted">{t.editHint}</span>
+    </div>
+  );
+}
+
 export function Jurnal({ me }: { me: Me }) {
   const toast = useToast();
   const dial = useDial();
@@ -49,7 +74,12 @@ export function Jurnal({ me }: { me: Me }) {
 
   // DESIGN-GAP: desain jurnal tidak punya kartu krisis; catatan berbahaya membuka sheet Bantuan
   // (tanpa toast, supaya nomor layanan tidak tertutup).
-  const saved = (res: JournalSave) => (res.help ? setSheet('help') : toast(t.saved));
+  const [editing, setEditing] = useState(false);
+  const saved = (res: JournalSave) => {
+    setEditing(false);
+    if (res.help) setSheet('help');
+    else toast(t.saved);
+  };
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
@@ -63,7 +93,18 @@ export function Jurnal({ me }: { me: Me }) {
               {t.title}
             </h1>
           </div>
-          <JournalForm todayEntry={todayEntry} onSaved={saved} />
+          {todayEntry && !editing ? (
+            <TodayMood entry={todayEntry} onEdit={() => setEditing(true)} />
+          ) : (
+            <>
+              <JournalForm todayEntry={todayEntry} onSaved={saved} />
+              {editing && (
+                <Button variant="link" onClick={() => setEditing(false)}>
+                  {t.cancel}
+                </Button>
+              )}
+            </>
+          )}
         </section>
 
         <div className="flex flex-col gap-14">
