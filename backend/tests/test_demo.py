@@ -22,6 +22,25 @@ async def _login(client: AsyncClient, x: demo.StaffLogin) -> dict[str, str]:
     return {"Authorization": f"Bearer {r.json()['access_token']}"}
 
 
+async def test_demo_code_logs_in_only_demo_accounts(
+    client: AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    async with TestSession() as s:
+        with pytest.raises(RuntimeError):  # belum di-seed: tidak ada akun yang bisa dibuatkan kode
+            await demo.current_code(s, Role.pendamping)
+    monkeypatch.setattr(settings, "demo_mode", True)
+    async with TestSession() as s:
+        logins = {x.role: x for x in await demo.seed(s)}
+        code, left = await demo.current_code(s, Role.pendamping)
+    assert code.isdigit() and len(code) == 6 and 0 < left <= 30
+    x = logins[Role.pendamping]
+    r = await client.post("/auth/staff/login", json={"email": x.email, "password": x.password})
+    r = await client.post(
+        "/auth/staff/totp", json={"pre_auth_token": r.json()["pre_auth_token"], "code": code}
+    )
+    assert r.status_code == 200 and r.json()["role"] == "pendamping"
+
+
 async def test_seed_requires_demo_mode(db: None) -> None:
     async with TestSession() as s:
         with pytest.raises(RuntimeError):

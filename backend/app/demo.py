@@ -9,6 +9,7 @@ Kasus di antrian pendamping memakai data contoh dari prototipe di design/.
 
 import random
 import secrets
+import time
 import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -39,7 +40,7 @@ from app.models import (
 )
 from app.services.auth import hash_password
 from app.services.chat import WIB
-from app.services.crypto import encrypt
+from app.services.crypto import decrypt, encrypt
 from app.settings import settings
 
 TEEN_PREFIX = "demo-"
@@ -310,6 +311,21 @@ async def seed(session: AsyncSession) -> list[StaffLogin]:
     await _population(session, kels, random.Random(2026))
     await session.commit()
     return logins
+
+
+async def current_code(session: AsyncSession, role: Role) -> tuple[str, int]:
+    """(kode TOTP sekarang, sisa detik) untuk akun staf DEMO: presentasi tanpa authenticator.
+
+    Hanya mencari email demo-…@example.com, jadi 2FA akun staf asli tidak bisa dilewati lewat sini.
+    """
+    email = STAFF_EMAIL.format(role.value.replace("_", "-"))
+    secret_enc = (
+        await session.execute(select(User.totp_secret_enc).where(User.email == email))
+    ).scalar_one_or_none()
+    if secret_enc is None:
+        raise RuntimeError("Akun demo belum ada. Jalankan seed-demo dulu.")
+    totp = pyotp.TOTP(decrypt(secret_enc))
+    return totp.now(), int(totp.interval - time.time() % totp.interval)
 
 
 async def reset(session: AsyncSession) -> int:

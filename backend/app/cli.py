@@ -3,6 +3,7 @@
     uv run python -m app.cli create-staff --email ... --role pendamping --kelurahan Krobokan
     uv run python -m app.cli seed-demo     # butuh DEMO_MODE=true; data SINTETIS + 3 akun staf demo
     uv run python -m app.cli reset-demo    # hapus hanya data demo
+    uv run python -m app.cli kode-demo pendamping   # kode 6 digit akun staf DEMO (tanpa HP)
     uv run python -m app.cli telegram-webhook [--url URL | --delete]   # produksi (HTTPS)
 
 create-staff meminta password lewat prompt dan mencetak URI otpauth untuk aplikasi authenticator.
@@ -62,6 +63,12 @@ async def reset_demo() -> None:
         print(f"Data demo dihapus ({await demo.reset(session)} remaja sintetis).")
 
 
+async def demo_code(role: Role) -> None:
+    async with SessionLocal() as session:
+        code, left = await demo.current_code(session, role)
+    print(f"Kode {role.value}: {code}  (berlaku {left} detik lagi, sekali pakai)")
+
+
 async def telegram_webhook(url: str | None, remove: bool) -> None:
     """Daftarkan webhook bot ke backend publik. Default: FRONTEND_ORIGIN + /api/telegram/webhook
     (tata letak Docker: Caddy meneruskan /api ke backend). --delete = kembali ke mode polling."""
@@ -107,6 +114,8 @@ def main() -> None:
     p.add_argument("--kelurahan", help="Wajib untuk pendamping")
     sub.add_parser("seed-demo")
     sub.add_parser("reset-demo")
+    k = sub.add_parser("kode-demo", help="Kode TOTP akun staf demo (hanya akun demo-…)")
+    k.add_argument("role", choices=[r.value for r in Role if r != Role.remaja])
     w = sub.add_parser("telegram-webhook")
     w.add_argument("--url", help="Default: FRONTEND_ORIGIN/api/telegram/webhook")
     w.add_argument("--delete", action="store_true", help="Hapus webhook (untuk mode polling)")
@@ -115,6 +124,8 @@ def main() -> None:
         asyncio.run(seed_demo())
     elif a.cmd == "reset-demo":
         asyncio.run(reset_demo())
+    elif a.cmd == "kode-demo":
+        asyncio.run(demo_code(Role(a.role)))
     elif a.cmd == "telegram-webhook":
         asyncio.run(telegram_webhook(a.url, a.delete))
     else:

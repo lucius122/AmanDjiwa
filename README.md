@@ -86,7 +86,11 @@ uv run python -m app.cli reset-demo   # hapus HANYA data demo
 ```
 
 `seed-demo` mencetak email, password, dan URI TOTP untuk akun pendamping, konselor, dan admin
-kota demo.
+kota demo. Untuk presentasi tanpa aplikasi authenticator, ambil kode 6 digitnya lewat:
+
+```bash
+uv run python -m app.cli kode-demo pendamping   # atau: konselor | admin_kota (hanya akun demo-…)
+```
 
 ## Deploy ke VPS (Docker Compose + Caddy)
 
