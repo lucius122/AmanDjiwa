@@ -1,0 +1,5 @@
+# Teks yang dibuat backend untuk dasbor staf (bukan untuk remaja). Teks dari prototipe di design/.
+case_log:
+  contacted: Sudah dihubungi
+  done: Ditandai selesai
+  refer: Dirujuk ke {tujuan}

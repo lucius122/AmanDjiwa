@@ -1,0 +1,13 @@
+# Teks bot Telegram. DESIGN-GAP: tidak ada desain Telegram; diturunkan dari copy web.
+# TODO_VERIFY: review tim. Dikirim sebagai teks biasa (tanpa Markdown).
+start: Hai! Aku Djiwa. Supaya obrolan kita nyambung dengan akunmu, buka AmanDjiwa di web, pilih "Telegram", lalu tekan "Buka Telegram".
+linked: Akunmu sudah tersambung, {nama}. Sekarang kamu bisa cerita ke aku di sini kapan aja.
+link_invalid: Kodenya sudah nggak berlaku. Minta kode baru dari menu Telegram di web ya.
+not_linked: Aku belum kenal akun kamu. Sambungkan dulu lewat menu Telegram di web AmanDjiwa ya.
+rate_limited: Pelan-pelan ya, aku masih baca pesanmu sebelumnya.
+napas: "Latihan napas 4-7-8 ada di web AmanDjiwa. Singkatnya: tarik napas 4 detik, tahan 7, buang 8. Ulangi 4 kali."
+question: Pertanyaan {n} dari {total}
+skip: Lewati dulu
+stop: Berhenti
+continue: Lanjut
+hotline: "{label}: {number}"

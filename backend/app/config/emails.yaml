@@ -1,0 +1,20 @@
+# DESIGN-GAP: isi email ke orang tua tidak ada di design/. Diturunkan dari halaman
+# "Persetujuan Orang Tua / Wali" di prototipe. Perlu direview tim + psikolog.
+guardian_request:
+  subject: Permohonan izin penggunaan layanan AmanDjiwa
+  body: |
+    Bapak/Ibu yang kami hormati,
+
+    Putra/putri Anda telah mendaftar di AmanDjiwa dan memerlukan persetujuan Anda untuk melanjutkan.
+
+    AmanDjiwa adalah layanan skrining dini kesehatan mental bagi remaja Kota Semarang. Layanan ini bukan alat diagnosis medis. Isi percakapan tidak dibagikan kepada orang tua maupun pihak sekolah.
+
+    Baca ketentuan lengkap dan berikan persetujuan Anda di tautan berikut:
+    {link}
+
+    Tautan berlaku {days} hari. Anda dapat mencabut persetujuan sewaktu-waktu melalui tautan yang sama.
+
+    Pertanyaan? Hubungi tim AmanDjiwa di {contact}
+
+# Di desain tertulis "[ kontak ]". Jangan dikarang.
+contact: TODO_VERIFY
