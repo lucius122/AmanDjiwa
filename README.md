@@ -52,8 +52,7 @@ Butuh: Docker, [uv](https://docs.astral.sh/uv/), Node 22.
 
 ```bash
 cp .env.example .env
-# isi minimal: MESSAGE_ENC_KEY, JWT_SECRET (cara membuatnya ada di komentar .env.example),
-# SUPABASE_URL + VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY (Auth remaja)
+# isi minimal: MESSAGE_ENC_KEY, JWT_SECRET (cara membuatnya ada di komentar .env.example)
 
 docker compose up -d                      # Postgres :5433, Redis, Mailpit (email dev: http://localhost:8025)
 
@@ -68,29 +67,21 @@ npm install
 npm run dev                               # http://localhost:5173
 ```
 
-Akun staf (password diminta lewat prompt, lalu pindai URI otpauth di aplikasi authenticator):
+## Akun
 
-```bash
-cd backend
-uv run python -m app.cli create-staff --email nama@contoh.id --name "Kak Dimas P." --role pendamping --kelurahan Krobokan
-#   --role: pendamping (wajib --kelurahan) | konselor | admin_kota
-```
+- **Remaja** mendaftar sendiri di `/masuk` dengan email + password. Email tidak disimpan polos
+  (hash untuk mencari akun + terenkripsi untuk link reset). Lupa password → link lewat email
+  backend (di laptop masuk Mailpit, http://localhost:8025).
+- **Staf** dibuat oleh admin kota di dasbor kota → **Akun staf**. Akun baru mendapat password
+  sementara (tampil sekali); saat login pertama di `/staf/masuk` staf memasang aplikasi
+  authenticator dan membuat password sendiri. Admin juga bisa menonaktifkan dan mereset akun.
+- **Admin kota pertama** dibuat lewat terminal (password diminta lewat prompt, lalu pindai URI
+  otpauth di aplikasi authenticator):
 
-## Login remaja: kode OTP email & Google (Supabase)
-
-Template email kode OTP ada di [supabase/templates/kode-masuk.html](supabase/templates/kode-masuk.html).
-Pasang template itu, Site URL & Redirect URL, serta (kalau sudah diisi di `.env`) SMTP sendiri dan
-login Google ke proyek Supabase dengan satu perintah:
-
-```bash
-cd backend
-uv run python -m app.cli supabase-auth                         # dev: http://localhost:5173
-uv run python -m app.cli supabase-auth --site-url https://domainmu   # produksi
-```
-
-Perintah meminta *personal access token* Supabase (supabase.com/dashboard/account/tokens). Token
-tidak disimpan; cabut lagi setelah dipakai. Tanpa SMTP sendiri, Supabase hanya mengirim kode ke
-email anggota tim proyek dan dibatasi beberapa email per jam.
+  ```bash
+  cd backend
+  uv run python -m app.cli create-staff --email nama@contoh.id --name "Dinkes Kota" --role admin_kota
+  ```
 
 ## Demo hackathon (data sintetis)
 
@@ -119,13 +110,47 @@ uv run python -m app.cli kode-demo pendamping   # atau: konselor | admin_kota (h
    docker compose --profile app up -d --build
    docker compose exec backend python -m app.cli telegram-webhook   # daftarkan webhook bot (HTTPS)
    ```
-4. Di dashboard Supabase → Authentication → URL Configuration: isi Site URL dan Redirect URL
-   `https://domainmu/mulai`.
-5. Cadangkan database tiap hari, mis. lewat cron di VPS:
+4. Cadangkan database tiap hari, mis. lewat cron di VPS:
    `docker compose exec -T postgres pg_dump -U amandjiwa amandjiwa | gzip > backup-$(date +%F).sql.gz`
 
 Caddy menyajikan frontend, meneruskan `/api/*` ke backend, mengurus HTTPS otomatis, dan memasang
 header keamanan (CSP, HSTS). Port Postgres/Redis hanya terbuka di `127.0.0.1`.
+
+## Deploy: Vercel (frontend) + Railway (backend)
+
+Vercel hanya menyajikan frontend; backend butuh proses yang selalu menyala (bot, peringatan kasus
+merah, Postgres, Redis), jadi ditaruh di Railway. Vercel meneruskan `/api/*` ke Railway, sehingga
+browser hanya bicara ke satu domain (tanpa CORS).
+
+**Railway** (railway.com → New Project → Deploy from GitHub repo):
+1. Tambah layanan **PostgreSQL** dan **Redis** di proyek yang sama.
+2. Layanan backend: *Root Directory* `backend` (memakai `backend/Dockerfile` + `railway.json`).
+   Migrasi jalan otomatis saat start.
+3. Variables backend:
+   - `DATABASE_URL` = `${{Postgres.DATABASE_URL}}`, `REDIS_URL` = `${{Redis.REDIS_URL}}`
+   - `MESSAGE_ENC_KEY`, `JWT_SECRET` (buat baru, jangan pakai milik laptop)
+   - `FRONTEND_ORIGIN` = URL Vercel (mis. `https://amandjiwa.vercel.app`)
+   - SMTP asli untuk email izin wali, reset password, dan peringatan merah: `SMTP_HOST`,
+     `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` (mis. Gmail + Sandi aplikasi)
+   - opsional: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `NVIDIA_API_KEY`
+4. Settings → Networking → **Generate Domain**, catat domainnya.
+5. Buat admin kota pertama dan daftarkan webhook bot. Perintah ini harus jalan **di dalam**
+   container backend (database Railway memakai jaringan privat), mis. lewat Railway CLI:
+   ```bash
+   railway link              # pilih proyek & layanan backend
+   railway ssh               # shell di dalam container
+   python -m app.cli create-staff --email ... --name "Dinkes Kota" --role admin_kota
+   python -m app.cli telegram-webhook --url https://<domain-railway>/telegram/webhook
+   ```
+   Setelah webhook terdaftar, jangan jalankan bot mode polling di laptop dengan token yang sama
+   (Telegram hanya mengirim ke satu tempat).
+
+**Vercel** (vercel.com → Add New Project → repo ini):
+1. *Root Directory* `frontend` (framework Vite terdeteksi; build & header keamanan dari
+   `frontend/vercel.json`).
+2. Environment variable: `VITE_API_URL` = `/api`.
+3. Di `frontend/vercel.json`, ganti `GANTI-DENGAN-DOMAIN-RAILWAY.up.railway.app` dengan domain
+   Railway dari langkah 4, commit, lalu deploy.
 
 ## Tugas terjadwal
 
@@ -151,4 +176,3 @@ Tes memakai database `amandjiwa_test` di Postgres yang sama. Buat sekali:
 ```bash
 docker compose exec postgres createdb -U amandjiwa amandjiwa_test
 ```
-# AmanDjiwa

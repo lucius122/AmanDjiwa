@@ -64,22 +64,20 @@ sintetis**.
 
 ## B. Untuk deploy ke server
 
-- [ ] **5. VPS + domain.**
-  - VPS minimal 2 vCPU / 4 GB RAM, karena inference ONNX berjalan di CPU.
-  - Domain dengan DNS A record mengarah ke VPS.
-  - Kirim alamat domainnya, atau isi sendiri `SITE_ADDRESS` dan `FRONTEND_ORIGIN` (lihat README).
-- [ ] **6. Akun SMTP produksi** untuk email izin orang tua, peringatan kasus merah, dan laporan
-  mingguan.
-  - Yang dibutuhkan: host, port, user, password, alamat pengirim.
-  - Atur SPF/DKIM domain supaya tidak masuk spam.
-- [ ] **7. Supabase:** isi `GOOGLE_CLIENT_ID/SECRET` dan `AUTH_SMTP_*` di `.env`, lalu jalankan
-  `uv run python -m app.cli supabase-auth --site-url https://domainmu` (lihat README). Perintah itu
-  memasang template email kode OTP berbahasa Indonesia, Site/Redirect URL, SMTP, dan login Google.
+- [ ] **5. Hosting:** akun **Railway** (backend + Postgres + Redis) dan **Vercel** (frontend),
+  keduanya disambungkan ke repo GitHub `lucius122/AmanDjiwa`. Langkahnya ada di README
+  ("Deploy: Vercel + Railway"). Alternatif: VPS + domain dengan Docker Compose.
+- [ ] **6. Akun SMTP** (mis. Gmail + Sandi aplikasi, atau Brevo) untuk email izin orang tua,
+  link reset password remaja, peringatan kasus merah, dan laporan mingguan.
+  - Yang dibutuhkan: host, port, user, password, alamat pengirim → variabel `SMTP_*` di Railway.
+  - Tanpa SMTP, remaja di bawah 18 tahun tidak bisa menyelesaikan pendaftaran (email wali gagal).
+- [ ] **7. Admin kota pertama:** nama dan email kerja. Akun ini dibuat lewat terminal; pendamping,
+  konselor, dan admin kota lain lalu ditambahkan sendiri lewat halaman **Akun staf**.
 - [ ] **8. Kontak tim** untuk email & halaman persetujuan orang tua (sekarang tertulis
   "[ kontak ]"): `backend/app/config/emails.yaml` (`contact`) dan `frontend/src/lib/copy.ts`.
 - [ ] **9. Daftar staf asli:** nama tampil, email, peran (pendamping/konselor/admin kota), dan
-  kelurahan untuk pendamping. Tiap staf perlu aplikasi authenticator (Google Authenticator,
-  Aegis, dll.) untuk TOTP.
+  kelurahan untuk pendamping. Admin kota memasukkannya di halaman **Akun staf**; tiap staf perlu
+  aplikasi authenticator (Google Authenticator, Aegis, dll.) saat login pertama.
 - [ ] **10. Telegram (@BotFather):**
   - **`/revoke` token lama** (sempat ditempel di chat), lalu taruh token baru di `.env`;
   - `/setjoingroups` → Disable;

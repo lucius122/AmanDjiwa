@@ -5,7 +5,7 @@ yang sudah ada (CLAUDE.md §2). Mohon direview desainer/tim. Dibuat otomatis dar
 `DESIGN-GAP` di kode (06-10-2026); perbarui dengan:
 
 ```bash
-git grep -n DESIGN-GAP -- backend/app frontend/src
+grep -rn DESIGN-GAP backend/app frontend/src
 ```
 
 ## `backend/app/config/emails.yaml`
@@ -14,6 +14,7 @@ git grep -n DESIGN-GAP -- backend/app frontend/src
 |---|---|
 | 1 | isi email ke orang tua tidak ada di design/. Diturunkan dari halaman |
 | 22 | tidak ada di desain. TODO_VERIFY: review tim. ---------- |
+| 46 | tidak ada di desain. TODO_VERIFY: review tim. ---------- |
 
 ## `backend/app/config/response_bank.yaml`
 
@@ -25,6 +26,7 @@ git grep -n DESIGN-GAP -- backend/app frontend/src
 | 30 | balasan "sedih" tidak ada di desain. |
 | 51 | tidak ada di desain. |
 | 59 | desain hanya punya versi pendamping; versi konselor (lintas kelurahan). |
+| 63 | tidak ada di desain. |
 
 ## `backend/app/config/screening.yaml`
 
@@ -38,7 +40,7 @@ git grep -n DESIGN-GAP -- backend/app frontend/src
 | Baris | Catatan |
 |---|---|
 | 1 | tidak ada desain Telegram; diturunkan dari copy web. |
-| 16 | + TODO_VERIFY. Bisa dimatikan: /pengingat |
+| 18 | + TODO_VERIFY. Bisa dimatikan: /pengingat |
 
 ## `frontend/src/components/ScreeningCard.tsx`
 
@@ -57,57 +59,59 @@ git grep -n DESIGN-GAP -- backend/app frontend/src
 | Baris | Catatan |
 |---|---|
 | 2 | . |
-| 29 | state error & belum dikonfigurasi tidak ada di desain. |
-| 57 | tombol lanjut skrining & tawaran pendamping di luar kartu krisis. |
-| 79 | (lihat kode di baris ini) |
-| 123 | (lihat kode di baris ini) |
-| 124 | nomor belum diverifikasi (hotlines.yaml masih TODO_VERIFY) |
-| 139 | (lihat kode di baris ini) |
-| 144 | validasi) |
-| 186 | setelah muat ulang) |
-| 223 | state di bawah tidak ada di desain. |
-| 266 | belum ada entri) |
-| 275 | (lihat kode di baris ini) |
-| 276 | (lihat kode di baris ini) |
-| 312 | (lihat kode di baris ini) |
-| 317 | halaman login staf tidak ada di desain; diturunkan dari langkah login remaja. |
-| 334 | varian konselor (lintas kelurahan, hanya oranye/merah). |
-| 337 | (lihat kode di baris ini) |
-| 344 | (lihat kode di baris ini) |
-| 345 | (lihat kode di baris ini) |
-| 346 | (lihat kode di baris ini) |
-| 359 | (lihat kode di baris ini) |
-| 373 | "Tampilan ringkas" menyembunyikan cuplikan |
-| 374 | (lihat kode di baris ini) |
-| 375 | (lihat kode di baris ini) |
-| 388 | (lihat kode di baris ini) |
-| 389 | (lihat kode di baris ini) |
-| 394 | disengaja): desain menulis "Ringkasan kasus … akan dikirim", padahal pengiriman |
+| 20 | email + password (keputusan 2026-10-06), desain memakai kode OTP + Google. |
+| 37 | lupa & atur ulang password (tidak ada di desain). |
+| 76 | tombol lanjut skrining & tawaran pendamping di luar kartu krisis. |
+| 98 | (lihat kode di baris ini) |
+| 142 | (lihat kode di baris ini) |
+| 143 | nomor belum diverifikasi (hotlines.yaml masih TODO_VERIFY) |
+| 158 | (lihat kode di baris ini) |
+| 163 | validasi) |
+| 205 | setelah muat ulang) |
+| 242 | state di bawah tidak ada di desain. |
+| 285 | belum ada entri) |
+| 294 | (lihat kode di baris ini) |
+| 295 | (lihat kode di baris ini) |
+| 331 | (lihat kode di baris ini) |
+| 336 | halaman login staf tidak ada di desain; diturunkan dari langkah login remaja. |
+| 367 | varian konselor (lintas kelurahan, hanya oranye/merah). |
+| 370 | (lihat kode di baris ini) |
+| 377 | (lihat kode di baris ini) |
+| 378 | (lihat kode di baris ini) |
+| 379 | (lihat kode di baris ini) |
+| 392 | (lihat kode di baris ini) |
+| 406 | "Tampilan ringkas" menyembunyikan cuplikan |
+| 407 | (lihat kode di baris ini) |
 | 408 | (lihat kode di baris ini) |
-| 409 | form tambah jadwal (desain hanya menampilkan daftar). |
-| 418 | (lihat kode di baris ini) |
-| 430 | isi notifikasi browser (tanpa nama samaran, cukup kelurahan). |
-| 433 | (lihat kode di baris ini) |
-| 452 | (lihat kode di baris ini) |
-| 459 | (lihat kode di baris ini) |
-| 479 | (lihat kode di baris ini) |
-| 483 | (lihat kode di baris ini) |
-| 486 | (lihat kode di baris ini) |
-| 487 | (lihat kode di baris ini) |
+| 421 | (lihat kode di baris ini) |
+| 422 | (lihat kode di baris ini) |
+| 427 | disengaja): desain menulis "Ringkasan kasus … akan dikirim", padahal pengiriman |
+| 441 | (lihat kode di baris ini) |
+| 442 | form tambah jadwal (desain hanya menampilkan daftar). |
+| 451 | (lihat kode di baris ini) |
+| 463 | isi notifikasi browser (tanpa nama samaran, cukup kelurahan). |
+| 466 | (lihat kode di baris ini) |
+| 469 | tidak ada di desain. ---------- |
+| 519 | (lihat kode di baris ini) |
+| 526 | (lihat kode di baris ini) |
+| 546 | (lihat kode di baris ini) |
+| 550 | (lihat kode di baris ini) |
+| 553 | (lihat kode di baris ini) |
+| 554 | (lihat kode di baris ini) |
 
 ## `frontend/src/lib/me.ts`
 
 | Baris | Catatan |
 |---|---|
-| 27 | error jaringan → tetap memuat, query mencoba ulang |
+| 26 | error jaringan → tetap memuat, query mencoba ulang |
 
 ## `frontend/src/pages/Chat.tsx`
 
 | Baris | Catatan |
 |---|---|
-| 84 | (lihat kode di baris ini) |
-| 145 | state gagal memuat tidak ada di desain |
-| 170 | tawaran pendamping di luar kartu krisis memakai gaya chip. |
+| 86 | (lihat kode di baris ini) |
+| 147 | state gagal memuat tidak ada di desain |
+| 172 | tawaran pendamping di luar kartu krisis memakai gaya chip. |
 
 ## `frontend/src/pages/Gated.tsx`
 
@@ -138,14 +142,31 @@ git grep -n DESIGN-GAP -- backend/app frontend/src
 
 | Baris | Catatan |
 |---|---|
-| 61 | peringatan konfigurasi untuk lingkungan dev |
+| 22 | desain memakai kode OTP email + Google; bingkai, judul, dan teks pembuka tetap. |
+
+## `frontend/src/pages/PasswordReset.tsx`
+
+| Baris | Catatan |
+|---|---|
+| 11 | lupa & atur ulang password tidak ada di desain; gaya diturunkan dari langkah masuk. |
 
 ## `frontend/src/pages/kota/Kota.tsx`
 
 | Baris | Catatan |
 |---|---|
-| 124 | tombol keluar tidak ada di desain. |
-| 174 | state gagal memuat. |
+| 129 | state gagal memuat. |
+
+## `frontend/src/pages/kota/KotaLayout.tsx`
+
+| Baris | Catatan |
+|---|---|
+| 21 | . |
+
+## `frontend/src/pages/kota/StaffAccounts.tsx`
+
+| Baris | Catatan |
+|---|---|
+| 9 | kelola akun staf tidak ada di desain; gaya diturunkan dari kartu & tombol dasbor kota. |
 
 ## `frontend/src/pages/staff/CaseDetail.tsx`
 
@@ -178,4 +199,4 @@ git grep -n DESIGN-GAP -- backend/app frontend/src
 
 | Baris | Catatan |
 |---|---|
-| 18 | login staf (email + kata sandi → TOTP) tidak ada di desain; diturunkan dari login remaja. |
+| 25 | login staf (email + kata sandi → TOTP) tidak ada di desain; diturunkan dari login remaja. |

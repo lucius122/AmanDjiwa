@@ -14,7 +14,7 @@ Pengguna dan peran (RBAC):
 | `remaja` | Chat (web + Telegram), jurnal emosi, hapus data sendiri |
 | `pendamping` | Antrian & detail kasus **hanya di kelurahannya** |
 | `konselor` | Semua kasus oranye/merah, rujukan |
-| `admin_kota` | Dasbor agregat anonim saja, tanpa isi chat, tanpa identitas |
+| `admin_kota` | Dasbor agregat anonim saja, tanpa isi chat, tanpa identitas remaja; mengelola akun staf (tambah, nonaktifkan, reset — keputusan 2026-10-06) |
 
 ## 2. Desain = sumber kebenaran
 
@@ -26,6 +26,7 @@ Pengguna dan peran (RBAC):
 - Kalau ada layar atau state yang tidak ada di `design/` (misalnya error, loading, atau empty state), turunkan dari komponen yang sudah ada dan beri catatan `// DESIGN-GAP:` supaya bisa direview.
 - Data dummy di HTML diganti dengan data dari API. Teks UI tetap Bahasa Indonesia, sapaan "kamu".
 - Warna level risiko (hijau/kuning/oranye/merah) **hanya** boleh muncul di dasbor pendamping/konselor/kota, **TIDAK PERNAH** di halaman yang dilihat remaja.
+- Penyimpangan desain yang sudah disetujui (2026-10-06): langkah 1 onboarding memakai email + password (bukan kode OTP + Google), ditambah halaman lupa/atur ulang password dan halaman "Akun staf" di dasbor kota.
 - Penyimpangan desain yang sudah disetujui (2026-10-05): placeholder ilustrasi diganti ilustrasi SVG flat (warna token); placeholder logo mitra diganti nama organisasi sebagai teks sampai ada file logo resmi; landing ditambah satu CTA penutup sebelum footer.
 
 ## 3. Tech stack (FIXED — jangan diganti)
@@ -35,12 +36,11 @@ Pengguna dan peran (RBAC):
 - Tailwind CSS (+ shadcn/ui hanya bila komponennya cocok dengan desain)
 - React Router, TanStack Query, react-hook-form + Zod
 - Recharts (grafik). Peta dasbor kota = **tile grid seperti desain** (keputusan 2026-10-05; react-leaflet + GeoJSON tidak dipakai)
-- Supabase JS client (khusus auth remaja)
 
 **Backend** (`backend/`)
 - Python 3.11, FastAPI, Pydantic v2
 - SQLAlchemy 2 + Alembic (migrasi)
-- PostgreSQL 16 (boleh Supabase Postgres), Redis (state percakapan + rate limit)
+- PostgreSQL 16, Redis (state percakapan + rate limit)
 - aiogram 3 (Telegram bot, mode webhook)
 - APScheduler (pengingat jurnal, laporan mingguan)
 - transformers + onnxruntime (inference IndoBERTweet di CPU)
@@ -52,10 +52,10 @@ Pengguna dan peran (RBAC):
 - Selama file ONNX belum ada: krisis = leksikon saja, emosi = skor kata kunci; runner ONNX otomatis dipakai begitu modelnya ada. Training jadi milestone terpisah (keputusan 2026-10-05).
 
 **Auth**
-- Remaja: Supabase Auth (email OTP / Google). Wajib nama samaran, **tidak boleh** minta nama asli, NIK, atau alamat.
-- Staf: email + password + TOTP 2FA, JWT dengan claim `role` dan `kelurahan_id`.
+- Remaja: email + password di database sendiri (keputusan 2026-10-06, menggantikan Supabase Auth). Password di-hash argon2; email TIDAK disimpan polos (HMAC untuk mencari akun + AES-GCM hanya untuk link reset password). Wajib nama samaran, **tidak boleh** minta nama asli, NIK, atau alamat.
+- Staf: email + password + TOTP 2FA, JWT dengan claim `role` dan `kelurahan_id`. Akun dibuat admin kota dengan password sementara; saat login pertama staf memasang TOTP dan mengganti password sendiri (admin tidak pernah melihat kunci 2FA). Admin kota pertama dibuat lewat `cli create-staff`.
 
-**Infra**: Docker Compose (frontend, backend, postgres, redis, caddy) di VPS. Semua secret lewat `.env`.
+**Infra**: Docker Compose (frontend, backend, postgres, redis, caddy) di VPS, ATAU (keputusan 2026-10-06) frontend di Vercel + backend, Postgres, Redis di Railway (Vercel meneruskan `/api` ke backend). Semua secret lewat `.env` / variabel environment.
 
 **DILARANG menambahkan**: n8n, LangChain/LlamaIndex, Firebase, ORM lain, state manager global (Redux/Zustand) kecuali diminta, library analytics/tracker pihak ketiga (Google Analytics, Hotjar, dll.), dan library baru apa pun **tanpa bertanya dulu**.
 
@@ -132,6 +132,10 @@ pesan masuk
 
 ```
 POST /auth/staff/login         POST /auth/staff/totp
+POST /auth/staff/setup/start   POST /auth/staff/setup/finish   (login pertama staf)
+POST /auth/teen/register       POST /auth/teen/login
+POST /auth/teen/forgot         POST /auth/teen/reset
+GET  /admin/staff   POST /admin/staff   PATCH /admin/staff/{id}   POST /admin/staff/{id}/reset
 POST /consent/assent           POST /consent/guardian/{token}
 POST /telegram/link-token      POST /telegram/webhook
 POST /chat/message             GET  /chat/history
