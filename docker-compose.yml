@@ -45,14 +45,9 @@ services:
 
   caddy:
     profiles: [app]
-    build:
-      context: ./frontend
-      args:
-        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-}
-        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:-}
+    build: ./frontend
     environment:
       SITE_ADDRESS: ${SITE_ADDRESS:-localhost}
-      SUPABASE_ORIGIN: ${VITE_SUPABASE_URL:-} # untuk connect-src di CSP
     ports: ["80:80", "443:443", "443:443/udp"]
     volumes: [caddy_data:/data, caddy_config:/config]
     depends_on: [backend]

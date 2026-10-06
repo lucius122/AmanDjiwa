@@ -8,7 +8,7 @@ import base64
 import os
 import secrets
 from collections.abc import AsyncIterator
-from datetime import UTC, date, datetime, timedelta
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -18,9 +18,6 @@ os.environ["DATABASE_URL"] = os.environ.get(
 )
 os.environ["MESSAGE_ENC_KEY"] = base64.b64encode(os.urandom(32)).decode()
 os.environ["JWT_SECRET"] = secrets.token_urlsafe(48)
-os.environ["SUPABASE_URL"] = ""
-os.environ["SUPABASE_JWT_SECRET"] = SUPABASE_SECRET = secrets.token_urlsafe(48)
-os.environ["SUPABASE_SERVICE_ROLE_KEY"] = ""
 # Tes tidak pernah memanggil LLM sungguhan; test_llm memakai tiruan.
 os.environ["NVIDIA_API_KEY"] = ""
 os.environ["DEMO_MODE"] = "false"  # test_demo menyalakannya sendiri
@@ -29,14 +26,13 @@ os.environ["TELEGRAM_BOT_TOKEN"] = ""  # tes tidak pernah memanggil API Telegram
 os.environ["TELEGRAM_WEBHOOK_SECRET"] = ""
 os.environ["REDIS_URL"] = REDIS_URL = os.environ.get("TEST_REDIS_URL", "redis://127.0.0.1:6379/15")
 
-import jwt  # noqa: E402
 import pyotp  # noqa: E402
 import pytest  # noqa: E402
 from alembic import command  # noqa: E402
 from alembic.config import Config  # noqa: E402
 from httpx import ASGITransport, AsyncClient  # noqa: E402
 from redis.asyncio import Redis  # noqa: E402
-from sqlalchemy import text  # noqa: E402
+from sqlalchemy import ColumnElement, text  # noqa: E402
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine  # noqa: E402
 from sqlalchemy.pool import NullPool  # noqa: E402
 
@@ -45,7 +41,7 @@ from app.main import app  # noqa: E402
 from app.models import Base, Role, User  # noqa: E402
 from app.redis import get_redis  # noqa: E402
 from app.services.auth import hash_password  # noqa: E402
-from app.services.crypto import encrypt  # noqa: E402
+from app.services.crypto import email_lookup_hash, encrypt  # noqa: E402
 
 KROBOKAN, MANYARAN = 10, 11  # id dari seed migrasi 0001
 STAFF_EMAIL = "dimas@example.com"
@@ -113,11 +109,22 @@ def bearer(token: str) -> dict[str, str]:
     return {"Authorization": f"Bearer {token}"}
 
 
-def teen_headers(sub: str = "teen-1") -> dict[str, str]:
-    """Access token tiruan Supabase Auth (HS256, aud=authenticated)."""
-    now = datetime.now(UTC)
-    claims = {"sub": sub, "aud": "authenticated", "iat": now, "exp": now + timedelta(hours=1)}
-    return bearer(jwt.encode(claims, SUPABASE_SECRET, algorithm="HS256"))
+TEEN_PASSWORD = "kata-sandi-remaja"
+
+
+def teen_where(sub: str) -> ColumnElement[bool]:
+    """Kondisi WHERE untuk akun remaja yang dibuat account(client, sub)."""
+    return User.email_hash == email_lookup_hash(f"{sub}@example.com")
+
+
+async def account(client: AsyncClient, sub: str = "teen-1") -> dict[str, str]:
+    """Akun remaja email+password (profil belum diisi) → header Bearer. Sudah ada = masuk."""
+    body = {"email": f"{sub}@example.com", "password": TEEN_PASSWORD}
+    r = await client.post("/auth/teen/register", json=body)
+    if r.status_code == 409:
+        r = await client.post("/auth/teen/login", json=body)
+    assert r.status_code in (200, 201), r.text
+    return bearer(r.json()["access_token"])
 
 
 def assent_body(**override: object) -> dict[str, object]:

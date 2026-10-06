@@ -12,16 +12,15 @@ export type Gate =
 
 /** Posisi remaja di alur: landing → masuk → daftar → (menunggu wali) → app. */
 export function useGate(pollMs?: number): Gate {
-  const { session, loading } = useSession();
+  const { token } = useSession();
   const me = useQuery({
-    queryKey: ['me', session?.user.id],
+    queryKey: ['me', token],
     queryFn: () => api<Me>('/me'),
-    enabled: !!session,
+    enabled: !!token,
     refetchInterval: pollMs,
     retry: (count, err) => !(err instanceof ApiError && err.status < 500) && count < 2,
   });
-  if (loading) return { state: 'loading' };
-  if (!session) return { state: 'anon' };
+  if (!token) return { state: 'anon' };
   if (me.data) return me.data.status === 'active' ? { state: 'active', me: me.data } : { state: 'pending', me: me.data };
   if (me.error instanceof ApiError && me.error.status === 404) return { state: 'needs_profile' };
   return { state: 'loading' }; // DESIGN-GAP: error jaringan → tetap memuat, query mencoba ulang

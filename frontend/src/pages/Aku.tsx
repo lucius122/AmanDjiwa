@@ -8,9 +8,8 @@ import { Icon } from '../components/Icon';
 import { Sheet } from '../components/Sheet';
 import { TelegramSheet } from '../components/TelegramSheet';
 import { useToast } from '../components/Toast';
-import { api } from '../lib/api';
+import { api, teenToken } from '../lib/api';
 import { copy } from '../lib/copy';
-import { supabase } from '../lib/supabase';
 import type { Hotline, Me } from '../lib/types';
 
 const t = copy.aku;
@@ -28,9 +27,9 @@ export function Aku({ me }: { me: Me }) {
   const [busy, setBusy] = useState(false);
 
   async function leave(message: string) {
-    // Pindah ke landing DULU: kalau signOut duluan, guard aplikasi sempat membelokkan ke /masuk.
+    // Pindah ke landing DULU: kalau sesi dihapus duluan, guard aplikasi sempat membelokkan ke /masuk.
     navigate('/', { replace: true });
-    await supabase?.auth.signOut();
+    teenToken.clear();
     queryClient.clear(); // jangan tinggalkan data remaja di cache browser
     toast(message);
   }

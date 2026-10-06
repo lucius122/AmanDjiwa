@@ -8,7 +8,7 @@ from sqlalchemy import select, update
 
 from app.api import consent as consent_api
 from app.models import GuardianConsent
-from tests.conftest import TestSession, assent_body, teen_headers
+from tests.conftest import TestSession, account, assent_body
 
 pytestmark = pytest.mark.anyio
 YEAR = date.today().year
@@ -27,7 +27,7 @@ def outbox(monkeypatch: pytest.MonkeyPatch) -> list[tuple[str, str]]:
 
 
 async def _register(client: AsyncClient, **override: object) -> dict[str, str]:
-    h = teen_headers()
+    h = await account(client)
     r = await client.post("/consent/assent", json=assent_body(**override), headers=h)
     assert r.status_code == 201, r.text
     return h
@@ -50,7 +50,7 @@ async def _guardian_token(
 )
 async def test_assent_sets_guardian_requirement(client: AsyncClient, age: int, status: str) -> None:
     r = await client.post(
-        "/consent/assent", json=assent_body(birth_year=YEAR - age), headers=teen_headers()
+        "/consent/assent", json=assent_body(birth_year=YEAR - age), headers=await account(client)
     )
     assert r.status_code == 201
     assert r.json()["status"] == status
@@ -71,7 +71,9 @@ async def test_assent_sets_guardian_requirement(client: AsyncClient, age: int, s
     ],
 )
 async def test_assent_rejects_invalid_input(client: AsyncClient, override: dict[str, Any]) -> None:
-    r = await client.post("/consent/assent", json=assent_body(**override), headers=teen_headers())
+    r = await client.post(
+        "/consent/assent", json=assent_body(**override), headers=await account(client)
+    )
     assert r.status_code == 422
 
 

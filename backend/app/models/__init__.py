@@ -47,6 +47,7 @@ class Role(enum.StrEnum):
 
 
 class UserStatus(enum.StrEnum):
+    onboarding = "onboarding"  # remaja: akun (email+password) sudah ada, profil & janji belum
     pending_guardian = "pending_guardian"
     active = "active"
     disabled = "disabled"
@@ -143,14 +144,22 @@ class Kelurahan(Base):
 class User(Base):
     __tablename__ = "users"
     __table_args__ = (
-        CheckConstraint("(role = 'remaja') = (auth_id IS NOT NULL)", name="remaja_has_auth_id"),
+        # Remaja login dengan email+password (keputusan 2026-10-06). auth_id = id lama Supabase /
+        # penanda data demo; akun seperti itu tidak bisa login.
+        CheckConstraint(
+            "role != 'remaja' OR auth_id IS NOT NULL OR email_hash IS NOT NULL",
+            name="remaja_has_login",
+        ),
         CheckConstraint(
             "role = 'remaja' OR (email IS NOT NULL AND password_hash IS NOT NULL)",
             name="staff_has_login",
         ),
         CheckConstraint(
-            "role NOT IN ('remaja', 'pendamping') OR kelurahan_id IS NOT NULL",
-            name="scoped_role_has_kelurahan",
+            "role != 'pendamping' OR kelurahan_id IS NOT NULL", name="scoped_role_has_kelurahan"
+        ),
+        CheckConstraint(  # kelurahan diisi bersama profil (langkah 2 pendaftaran)
+            "role != 'remaja' OR pseudonym IS NULL OR kelurahan_id IS NOT NULL",
+            name="teen_profile_has_kelurahan",
         ),
         CheckConstraint("avatar BETWEEN 0 AND 7", name="avatar_range"),
     )
@@ -161,8 +170,11 @@ class User(Base):
     kelurahan_id: Mapped[int | None] = mapped_column(ForeignKey("kelurahan.id"))
     created_at: Mapped[datetime] = _created()
 
-    # remaja: identitas hanya nama samaran; email login disimpan Supabase, bukan di sini.
+    # remaja: identitas hanya nama samaran. Email login TIDAK disimpan polos: email_hash untuk
+    # mencari akun saat login (HMAC), email_enc (AES-GCM) hanya untuk mengirim link reset password.
     auth_id: Mapped[str | None] = mapped_column(String(64), unique=True)
+    email_hash: Mapped[str | None] = mapped_column(String(64), unique=True)
+    email_enc: Mapped[bytes | None] = mapped_column(LargeBinary)
     pseudonym: Mapped[str | None] = mapped_column(String(20))
     avatar: Mapped[int | None] = mapped_column(SmallInteger)
     birth_year: Mapped[int | None] = mapped_column(SmallInteger)
@@ -344,6 +356,9 @@ class AuditLog(Base):
     actor_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
     action: Mapped[str] = mapped_column(String(48))
     case_id: Mapped[uuid.UUID | None]
+    target_id: Mapped[
+        uuid.UUID | None
+    ]  # akun staf yang dikelola admin kota (tanpa FK, sama alasan)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), index=True
     )

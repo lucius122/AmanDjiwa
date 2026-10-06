@@ -8,14 +8,14 @@ from sqlalchemy import select
 
 import app.pipeline as pipeline
 from app.models import Case, CaseStatus, Message, RiskAssessment, RiskLevel, Screening
-from tests.conftest import KROBOKAN, TestSession, assent_body, teen_headers
+from tests.conftest import KROBOKAN, TestSession, account, assent_body
 
 pytestmark = pytest.mark.anyio
 ADULT = date.today().year - 19  # langsung aktif, tanpa izin wali
 
 
 async def _teen(client: AsyncClient, sub: str = "teen-chat", **override: object) -> dict[str, str]:
-    h = teen_headers(sub)
+    h = await account(client, sub)
     body = assent_body(birth_year=ADULT, **override)
     assert (await client.post("/consent/assent", json=body, headers=h)).status_code == 201
     return h
@@ -43,7 +43,7 @@ async def _cases() -> list[Case]:
 
 
 async def test_pending_guardian_cannot_chat(client: AsyncClient) -> None:
-    h = teen_headers("minor")
+    h = await account(client, "minor")
     await client.post("/consent/assent", json=assent_body(), headers=h)  # 16 th → pending
     assert (await client.post("/chat/message", json={"text": "halo"}, headers=h)).status_code == 403
     assert (await client.get("/chat/history", headers=h)).status_code == 403

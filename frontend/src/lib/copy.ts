@@ -17,23 +17,38 @@ export const copy = {
     emailLabel: 'Email kamu',
     emailPlaceholder: 'nama@email.com',
     emailError: 'Cek lagi ya, formatnya belum kayak email.',
-    sendCode: 'Kirim kode',
-    otpLabel: 'Masukkan 6 digit kode',
-    otpSentTo: (email: string) => `Kode dikirim ke ${email}.`,
-    otpPlaceholder: '••••••',
-    submit: 'Masuk',
-    resend: 'Kirim ulang kode',
-    resent: (email: string) => `Kode baru dikirim ke ${email}`,
-    or: 'atau',
-    google: 'Masuk dengan Google',
-    // DESIGN-GAP: state error & belum dikonfigurasi tidak ada di desain.
-    otpWrong: 'Kodenya belum cocok. Cek lagi ya, atau kirim ulang kode.',
+    // DESIGN-GAP: email + password (keputusan 2026-10-06), desain memakai kode OTP + Google.
+    titleRegister: 'Hai! Yuk bikin akun dulu',
+    passwordLabel: 'Password',
+    passwordHint: 'Minimal 8 karakter',
+    passwordShort: 'Password minimal 8 karakter ya.',
+    confirmLabel: 'Ulangi password',
+    confirmMismatch: 'Password-nya belum sama.',
+    submitLogin: 'Masuk',
+    submitRegister: 'Buat akun',
+    toRegister: 'Belum punya akun?',
+    toRegisterLink: 'Daftar',
+    toLogin: 'Sudah punya akun?',
+    toLoginLink: 'Masuk',
+    forgot: 'Lupa password?',
     failed: 'Lagi ada gangguan. Coba lagi sebentar ya.',
-    notConfigured: 'Login belum dikonfigurasi (isi VITE_SUPABASE_URL & VITE_SUPABASE_ANON_KEY).',
-    rateLimited: 'Terlalu sering minta kode. Tunggu beberapa menit, lalu coba lagi ya.',
-    emailNotAllowed: 'Kode belum bisa dikirim ke email ini. Coba lagi nanti atau masuk dengan Google ya.',
-    googleOff: 'Masuk dengan Google belum tersedia. Pakai kode email dulu ya.',
-    googleFailed: 'Masuk dengan Google belum berhasil. Coba lagi atau pakai kode email ya.',
+  },
+
+  // DESIGN-GAP: lupa & atur ulang password (tidak ada di desain).
+  forgot: {
+    title: 'Lupa password?',
+    lead: 'Tulis email akunmu. Kalau terdaftar, kami kirim tautan untuk bikin password baru.',
+    submit: 'Kirim tautan',
+    sent: (email: string) => `Kalau ${email} terdaftar, tautannya sudah dikirim. Cek juga folder spam ya.`,
+    back: 'Kembali ke halaman masuk',
+  },
+
+  reset: {
+    title: 'Bikin password baru',
+    lead: 'Pakai password yang belum pernah kamu pakai di aplikasi lain.',
+    submit: 'Simpan password',
+    invalid: 'Tautan sudah tidak berlaku. Minta tautan baru ya.',
+    done: 'Password baru tersimpan',
   },
 
   nav: { chat: 'Ngobrol', jurnal: 'Jurnal', aku: 'Aku' },
@@ -328,6 +343,20 @@ export const copy = {
     totpLead: 'Buka aplikasi autentikator lalu masukkan 6 digit kodenya.',
     totpSubmit: 'Masuk',
     failed: 'Belum bisa masuk. Coba lagi.',
+    // Login pertama (akun dibuat/di-reset admin kota): pasang authenticator + password baru.
+    setupTitle: 'Atur akunmu dulu',
+    setupLead: 'Ini login pertamamu. Pasang aplikasi authenticator di HP, lalu buat password baru.',
+    setupKeyLabel: 'Kunci penyiapan',
+    setupKeyHelp:
+      'Di aplikasi authenticator (Google Authenticator, Aegis, atau Microsoft Authenticator) pilih "Masukkan kunci penyiapan", lalu ketik kunci ini. Jenis: berbasis waktu.',
+    setupOpenApp: 'Buka di aplikasi authenticator (HP)',
+    newPassword: 'Password baru',
+    newPasswordHint: 'Minimal 12 karakter, beda dari password sementara.',
+    confirmPassword: 'Ulangi password baru',
+    passwordShort: 'Password baru minimal 12 karakter.',
+    passwordMismatch: 'Password baru belum sama.',
+    setupCode: 'Kode 6 digit dari aplikasi',
+    setupSubmit: 'Simpan & masuk',
   },
 
   staff: {
@@ -435,6 +464,40 @@ export const copy = {
     notifyTitle: 'Kasus merah baru',
     notifyBody: (kel: string) => `Ada kasus risiko merah baru di ${kel}. Buka antrian.`,
     failed: 'Pengaturan belum tersimpan.', // DESIGN-GAP
+  },
+
+  // ---------- kelola akun staf (admin kota). DESIGN-GAP: tidak ada di desain. ----------
+  kotaNav: { summary: 'Ringkasan', accounts: 'Akun staf' },
+  staffAdmin: {
+    title: 'Akun staf',
+    lead: 'Tambah akun pendamping, konselor, atau admin kota. Staf baru memasang authenticator dan membuat password sendiri saat login pertama.',
+    addTitle: 'Tambah akun',
+    name: 'Nama tampil',
+    namePlaceholder: 'Mis. Kak Rina',
+    email: 'Email kerja',
+    role: 'Peran',
+    roles: { pendamping: 'Pendamping', konselor: 'Konselor', admin_kota: 'Admin kota' },
+    kelurahan: 'Kelurahan',
+    kelurahanPick: 'Pilih kelurahan',
+    add: 'Tambah akun',
+    tempTitle: (name: string) => `Password sementara untuk ${name}`,
+    tempBody:
+      'Berikan langsung ke orangnya (jangan lewat grup). Password ini hanya ditampilkan sekali. Saat login pertama di /staf/masuk, staf wajib menggantinya dan memasang authenticator.',
+    copy: 'Salin',
+    copied: 'Password disalin',
+    close: 'Sudah dicatat',
+    listTitle: 'Daftar akun',
+    active: 'Aktif',
+    disabled: 'Nonaktif',
+    needsSetup: 'Belum login pertama',
+    disable: 'Nonaktifkan',
+    enable: 'Aktifkan',
+    reset: 'Reset',
+    resetConfirm: (name: string) =>
+      `Reset akun ${name}? Password lama dan authenticator-nya tidak berlaku lagi; ${name} harus login pertama ulang.`,
+    created: 'Akun dibuat',
+    failed: 'Belum berhasil. Coba lagi.',
+    loadFailed: 'Daftar akun belum bisa dimuat.',
   },
 
   // ---------- dasbor kota (hanya agregat) ----------

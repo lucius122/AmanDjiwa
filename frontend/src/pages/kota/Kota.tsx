@@ -1,13 +1,11 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Navigate, useNavigate } from 'react-router';
 import { Icon } from '../../components/Icon';
 import { KpiCard } from '../../components/KpiCard';
-import { LogoMark, Wordmark } from '../../components/Logo';
-import { ApiError, staffApi, staffToken } from '../../lib/api';
+import { staffApi } from '../../lib/api';
 import { copy } from '../../lib/copy';
 import { dayMonth, lastWeeks, wibDate } from '../../lib/time';
-import type { CityAggregate, EmotionKey, KelurahanStat, Staff } from '../../lib/types';
+import type { CityAggregate, EmotionKey, KelurahanStat } from '../../lib/types';
 
 const t = copy.kota;
 const CARD = 'flex min-w-0 flex-col rounded-16 border border-sand-200 bg-white p-20';
@@ -55,47 +53,22 @@ const SERIES: { key: EmotionKey; stroke: string; swatch: string; dash: string }[
   { key: 'netral', stroke: 'stroke-chart-netral', swatch: 'bg-chart-netral', dash: '14 5 2 5' },
 ];
 
-const initials = (name: string) =>
-  name
-    .split(' ')
-    .map((w) => w[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
 const pctLabel = (v: number | null) => (v === null ? t.hidden : `${v}%`);
 const num = (n: number) => n.toLocaleString('id-ID');
 
+/** Ringkasan agregat (desain "Dasbor Kota"). Akses & header ada di KotaLayout. */
 export function Kota() {
-  const token = staffToken.get();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [weeks, setWeeks] = useState(8);
   const [mode, setMode] = useState<'peta' | 'tabel'>('peta');
   const [picked, setPicked] = useState<number | null>(null);
   const [focus, setFocus] = useState(false);
   const [weekIdx, setWeekIdx] = useState<number | null>(null);
-  const me = useQuery({ queryKey: ['staff-me'], queryFn: () => staffApi<Staff>('/auth/staff/me'), enabled: !!token });
   const range = lastWeeks(weeks);
   const agg = useQuery({
     queryKey: ['aggregate', range.from, range.to],
     queryFn: () => staffApi<CityAggregate>(`/dashboard/aggregate?from=${range.from}&to=${range.to}`),
-    enabled: me.data?.role === 'admin_kota',
     placeholderData: (prev) => prev,
   });
-
-  if (!token || (me.error instanceof ApiError && me.error.status === 401)) {
-    staffToken.clear();
-    return <Navigate to="/staf/masuk" replace />;
-  }
-  if (!me.data) return null;
-  if (me.data.role !== 'admin_kota') return <Navigate to="/staf" replace />;
-
-  const name = me.data.display_name ?? copy.staff.roleLabel.admin_kota;
-  const logout = () => {
-    staffToken.clear();
-    queryClient.clear();
-    navigate('/staf/masuk', { replace: true });
-  };
 
   const d = agg.data;
   const k = d?.min_cell ?? 10;
@@ -110,25 +83,7 @@ export function Kota() {
   const dim = (x: KelurahanStat) => (focus && x.id !== sel?.id ? 'opacity-35' : '');
 
   return (
-    <div className="min-h-dvh bg-cream">
-      <header className="border-b border-sand-200 bg-white">
-        <div className="mx-auto flex min-h-64 max-w-1440 flex-wrap items-center gap-x-12 gap-y-10 px-20 py-8">
-          <LogoMark className="h-28 w-28" />
-          <Wordmark className="text-18" />
-          <span className="text-14 font-semibold text-muted">{t.subtitle}</span>
-          <span className="ml-auto flex items-center gap-8 text-13 font-semibold">
-            <span className="flex h-34 w-34 items-center justify-center rounded-full bg-sky-100 text-12 font-extrabold">
-              {initials(name)}
-            </span>
-            {name}
-            {/* DESIGN-GAP: tombol keluar tidak ada di desain. */}
-            <button type="button" onClick={logout} className="ml-8 h-34 px-6 font-bold text-muted hover:text-navy print:hidden">
-              {copy.staff.logout}
-            </button>
-          </span>
-        </div>
-      </header>
-
+    <>
       <main className="mx-auto flex max-w-1440 flex-col gap-16 p-20">
         <div className="flex flex-wrap items-center gap-10">
           <h1 className="m-0 flex-shrink flex-grow basis-280 text-fluid-24 font-extrabold tracking-tight">{t.title}</h1>
@@ -367,7 +322,7 @@ export function Kota() {
           </>
         )}
       </main>
-    </div>
+    </>
   );
 }
 

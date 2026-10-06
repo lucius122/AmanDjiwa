@@ -192,3 +192,21 @@ export interface CityAggregate {
   trend: { week: string; pct: Record<EmotionKey, number> | null }[];
   topics: { key: string; label: string; pct: number }[];
 }
+
+// ---------- kelola akun staf (app/api/admin.py) ----------
+export interface StaffAccount {
+  id: string;
+  display_name: string | null;
+  email: string | null;
+  role: Exclude<Role, 'remaja'>;
+  kelurahan_id: number | null;
+  kelurahan_name: string | null;
+  status: 'active' | 'disabled';
+  needs_setup: boolean;
+  created_at: string;
+}
+
+export interface StaffWithPassword {
+  account: StaffAccount;
+  temp_password: string;
+}

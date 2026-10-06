@@ -1,11 +1,11 @@
-"""Primitif keamanan: hash password, TOTP, JWT staf, verifikasi token Supabase remaja."""
+"""Primitif keamanan: hash password, TOTP, JWT (staf & remaja), batas salah password."""
 
 import hashlib
 import secrets
 import time
 import uuid
 from datetime import UTC, datetime, timedelta
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import jwt
 import pyotp
@@ -14,8 +14,15 @@ from argon2.exceptions import InvalidHashError, VerifyMismatchError
 
 from app.settings import settings
 
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
+
+    from app.models import User
+
 ACCESS_TTL = timedelta(hours=8)
 PRE_TOTP_TTL = timedelta(minutes=5)
+PRE_SETUP_TTL = timedelta(minutes=15)  # login pertama staf: pasang authenticator + ganti password
+TEEN_TTL = timedelta(days=7)  # sesi remaja; "Keluar" di menu Aku menghapusnya dari perangkat
 MAX_FAILED_LOGINS = 5
 LOCK_TIME = timedelta(minutes=15)
 
@@ -54,41 +61,35 @@ def issue_token(sub: uuid.UUID, typ: str, ttl: timedelta, **claims: str | int | 
 
 
 def read_token(token: str, typ: str) -> dict[str, Any]:
-    """Raise jwt.InvalidTokenError kalau tidak valid. Token Supabase (punya aud) ditolak di sini."""
+    """Raise jwt.InvalidTokenError kalau tidak valid atau tipenya lain (remaja ≠ staf)."""
     payload: dict[str, Any] = jwt.decode(token, settings.jwt_secret, algorithms=["HS256"])
     if payload.get("typ") != typ:
         raise jwt.InvalidTokenError("tipe token salah")
     return payload
 
 
-_jwks = (
-    jwt.PyJWKClient(f"{settings.supabase_url}/auth/v1/.well-known/jwks.json")
-    if settings.supabase_url
-    else None
-)
+def is_locked(user: "User") -> bool:
+    return user.locked_until is not None and user.locked_until > datetime.now(UTC)
 
 
-def read_supabase_sub(token: str) -> str:
-    """Verifikasi access token Supabase Auth, kembalikan user id (sub). Sinkron: JWKS bisa fetch.
+async def register_failure(session: "AsyncSession", user: "User") -> None:
+    """Salah password/kode ke-5 → akun dikunci 15 menit. Dipakai login staf dan remaja."""
+    user.failed_logins += 1
+    if user.failed_logins >= MAX_FAILED_LOGINS:
+        user.locked_until = datetime.now(UTC) + LOCK_TIME
+        user.failed_logins = 0
+    await session.commit()
 
-    Jalur dipilih dari `alg` di header: project baru menandatangani dengan kunci asimetris
-    (ES256/RS256, via JWKS), project lama dengan HS256 + JWT secret. Jalur HS256 hanya memakai
-    secret dari config, tidak pernah kunci publik JWKS (mencegah algorithm confusion).
+
+_TEMP_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789"  # tanpa 0/O, 1/l/I
+
+
+def new_temp_password() -> str:
+    """Password sementara akun staf baru/di-reset (ditampilkan sekali ke admin kota).
+
+    12 karakter tanpa huruf yang mirip, karena biasanya dibacakan / disalin manual.
     """
-    opts: dict[str, Any] = {"audience": "authenticated"}
-    if settings.supabase_url:
-        opts["issuer"] = f"{settings.supabase_url}/auth/v1"
-    alg = jwt.get_unverified_header(token).get("alg")
-    if alg == "HS256" and settings.supabase_jwt_secret:
-        payload = jwt.decode(token, settings.supabase_jwt_secret, algorithms=["HS256"], **opts)
-    elif alg in ("ES256", "RS256") and _jwks:
-        key = _jwks.get_signing_key_from_jwt(token).key
-        payload = jwt.decode(token, key, algorithms=["ES256", "RS256"], **opts)
-    else:
-        raise jwt.InvalidTokenError(f"token {alg} tidak bisa diverifikasi dengan konfigurasi ini")
-    if payload.get("is_anonymous"):  # remaja wajib login email OTP / Google (§3)
-        raise jwt.InvalidTokenError("akun anonim tidak diizinkan")
-    return str(payload["sub"])
+    return "".join(secrets.choice(_TEMP_ALPHABET) for _ in range(12))
 
 
 def new_link_token() -> tuple[str, str]:

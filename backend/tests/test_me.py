@@ -22,7 +22,7 @@ from app.models import (
     User,
 )
 from app.services.crypto import encrypt
-from tests.conftest import KROBOKAN, TestSession, assent_body, teen_headers
+from tests.conftest import KROBOKAN, TestSession, account, assent_body, teen_where
 
 pytestmark = pytest.mark.anyio
 TABLES = [
@@ -41,7 +41,7 @@ TABLES = [
 
 async def _fill_everything(sub: str, telegram_id: int) -> None:
     async with TestSession() as s:
-        u = (await s.execute(select(User).where(User.auth_id == sub))).scalar_one()
+        u = (await s.execute(select(User).where(teen_where(sub)))).scalar_one()
         conv = Conversation(user_id=u.id, channel=Channel.web)
         s.add(conv)
         await s.flush()
@@ -65,7 +65,7 @@ async def _fill_everything(sub: str, telegram_id: int) -> None:
 
 
 async def test_delete_me_removes_all_my_data_only(client: AsyncClient) -> None:
-    mine, other = teen_headers("hapus-aku"), teen_headers("tetap-ada")
+    mine, other = await account(client, "hapus-aku"), await account(client, "tetap-ada")
     for i, (sub, h) in enumerate([("hapus-aku", mine), ("tetap-ada", other)]):
         assert (
             await client.post("/consent/assent", json=assent_body(), headers=h)
@@ -73,7 +73,8 @@ async def test_delete_me_removes_all_my_data_only(client: AsyncClient) -> None:
         await _fill_everything(sub, telegram_id=1000 + i)
 
     assert (await client.delete("/me", headers=mine)).status_code == 204
-    assert (await client.get("/me", headers=mine)).status_code == 404
+    # Akun login ikut terhapus → sesi lama tidak berlaku lagi.
+    assert (await client.get("/me", headers=mine)).status_code == 401
 
     async with TestSession() as s:
         for model in TABLES:  # yang tersisa hanya milik "tetap-ada"

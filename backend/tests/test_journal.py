@@ -6,14 +6,14 @@ from sqlalchemy import select
 
 from app.models import Case, JournalEntry, RiskAssessment, RiskLevel, User
 from app.services.chat import WIB, negative_day_ratio
-from tests.conftest import TestSession, assent_body, teen_headers
+from tests.conftest import TestSession, account, assent_body, teen_where
 
 pytestmark = pytest.mark.anyio
 ADULT = date.today().year - 19
 
 
 async def _teen(client: AsyncClient, sub: str = "jurnal-1") -> dict[str, str]:
-    h = teen_headers(sub)
+    h = await account(client, sub)
     body = assent_body(birth_year=ADULT)
     assert (await client.post("/consent/assent", json=body, headers=h)).status_code == 201
     return h
@@ -54,7 +54,7 @@ async def test_note_encrypted_and_private(client: AsyncClient) -> None:
 async def test_days_window(client: AsyncClient) -> None:
     h = await _teen(client)
     async with TestSession() as s:
-        user = (await s.execute(select(User).where(User.auth_id == "jurnal-1"))).scalar_one()
+        user = (await s.execute(select(User).where(teen_where("jurnal-1")))).scalar_one()
         today = datetime.now(WIB).date()
         for back in (3, 13, 14, 40):
             s.add(
@@ -82,7 +82,7 @@ async def test_invalid_input(client: AsyncClient, bad: dict[str, object]) -> Non
 
 
 async def test_pending_guardian_cannot_journal(client: AsyncClient) -> None:
-    h = teen_headers("minor")
+    h = await account(client, "minor")
     await client.post("/consent/assent", json=assent_body(), headers=h)  # 16 th → menunggu wali
     body = {"emotion": "senang", "intensity": 3}
     assert (await client.post("/journal", json=body, headers=h)).status_code == 403
@@ -104,5 +104,5 @@ async def test_journal_feeds_14_day_trajectory(client: AsyncClient) -> None:
     h = await _teen(client)
     await _save(client, h, emotion="sedih", intensity=4)
     async with TestSession() as s:
-        user = (await s.execute(select(User).where(User.auth_id == "jurnal-1"))).scalar_one()
+        user = (await s.execute(select(User).where(teen_where("jurnal-1")))).scalar_one()
         assert await negative_day_ratio(s, user) == 1.0

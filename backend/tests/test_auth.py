@@ -13,10 +13,10 @@ from tests.conftest import (
     STAFF_EMAIL,
     STAFF_PASSWORD,
     TestSession,
+    account,
     bearer,
     make_staff,
     staff_login,
-    teen_headers,
 )
 
 pytestmark = pytest.mark.anyio
@@ -75,4 +75,4 @@ async def test_teen_and_staff_tokens_do_not_cross(client: AsyncClient) -> None:
     secret = await make_staff(Role.pendamping, KROBOKAN)
     staff = (await staff_login(client, secret))["access_token"]
     assert (await client.get("/me", headers=bearer(staff))).status_code == 401
-    assert (await client.get("/auth/staff/me", headers=teen_headers())).status_code == 401
+    assert (await client.get("/auth/staff/me", headers=await account(client))).status_code == 401

@@ -42,3 +42,15 @@ weekly_report:
   top_kelurahan: "Proporsi risiko tertinggi (oranye + merah):"
   top_topics: "Topik pemicu teratas:"
   footer: "Dasbor lengkap: {link}"
+
+# ---------- remaja: reset password. DESIGN-GAP: tidak ada di desain. TODO_VERIFY: review tim. ----------
+# Sengaja tanpa kata "kesehatan mental": email bisa terbaca di perangkat bersama.
+password_reset:
+  subject: Atur ulang password AmanDjiwa
+  body: |
+    Hai! Ada permintaan untuk mengatur ulang password akun AmanDjiwa kamu.
+
+    Buka tautan ini untuk membuat password baru (berlaku {minutes} menit, sekali pakai):
+    {link}
+
+    Kalau kamu nggak merasa minta, abaikan saja email ini. Password lamamu tetap berlaku.

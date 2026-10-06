@@ -10,7 +10,7 @@ from sqlalchemy import select
 
 from app.models import Case, CaseStatus, RiskLevel, User
 from app.pipeline import llm
-from tests.conftest import KROBOKAN, TestSession, assent_body, teen_headers
+from tests.conftest import KROBOKAN, TestSession, account, assent_body, teen_where
 
 pytestmark = pytest.mark.anyio
 ADULT = date.today().year - 19
@@ -37,7 +37,7 @@ def fake(monkeypatch: pytest.MonkeyPatch) -> FakeLLM:
 
 
 async def _teen(client: AsyncClient, nick: str = "Bintang Senja") -> dict[str, str]:
-    h = teen_headers("llm-1")
+    h = await account(client, "llm-1")
     body = assent_body(birth_year=ADULT, pseudonym=nick)
     assert (await client.post("/consent/assent", json=body, headers=h)).status_code == 201
     return h
@@ -180,7 +180,7 @@ async def test_llm_error_falls_back_to_bank(
 async def test_open_high_risk_case_keeps_bank_only(client: AsyncClient, fake: FakeLLM) -> None:
     h = await _teen(client)
     async with TestSession() as s:
-        user = (await s.execute(select(User).where(User.auth_id == "llm-1"))).scalar_one()
+        user = (await s.execute(select(User).where(teen_where("llm-1")))).scalar_one()
         s.add(
             Case(
                 user_id=user.id,

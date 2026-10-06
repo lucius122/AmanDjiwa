@@ -8,7 +8,7 @@ from sqlalchemy import func, select
 from app import demo
 from app.models import Role, User
 from app.settings import settings
-from tests.conftest import KROBOKAN, TestSession, assent_body, teen_headers
+from tests.conftest import KROBOKAN, TestSession, account, assent_body
 
 pytestmark = pytest.mark.anyio
 
@@ -50,7 +50,7 @@ async def test_seed_requires_demo_mode(db: None) -> None:
 async def test_seed_fills_dashboards_and_reset_keeps_real_data(
     client: AsyncClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    await client.post("/consent/assent", json=assent_body(), headers=teen_headers("asli"))
+    await client.post("/consent/assent", json=assent_body(), headers=await account(client, "asli"))
     monkeypatch.setattr(settings, "demo_mode", True)
     async with TestSession() as s:
         logins = {x.role: x for x in await demo.seed(s)}
@@ -73,6 +73,6 @@ async def test_seed_fills_dashboards_and_reset_keeps_real_data(
 
     async with TestSession() as s:
         await demo.reset(s)
-        users = (await s.execute(select(User.auth_id, User.kelurahan_id))).all()
+        users = (await s.execute(select(User.pseudonym, User.kelurahan_id))).all()
         staff = (await s.execute(select(func.count()).where(User.role != Role.remaja))).scalar()
-    assert users == [("asli", KROBOKAN)] and staff == 0
+    assert users == [("Bintang Senja", KROBOKAN)] and staff == 0  # akun remaja asli tetap ada

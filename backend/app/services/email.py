@@ -7,6 +7,7 @@ import yaml
 from app.settings import CONFIG_DIR, settings
 
 _COPY = yaml.safe_load((CONFIG_DIR / "emails.yaml").read_text("utf-8"))
+EMAILS = _COPY  # dipakai juga oleh auth remaja & jobs
 
 
 def _send(msg: EmailMessage) -> None:

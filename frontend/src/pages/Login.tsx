@@ -1,89 +1,74 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { AuthError } from '@supabase/supabase-js';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Navigate, useLocation, useNavigate } from 'react-router';
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
 import { z } from 'zod';
 import { Button } from '../components/Button';
 import { OnboardingFrame } from '../components/OnboardingFrame';
-import { useToast } from '../components/Toast';
+import { ApiError, api, teenToken } from '../lib/api';
 import { useSession } from '../lib/auth';
 import { copy } from '../lib/copy';
-import { providerEnabled, supabase } from '../lib/supabase';
 
 const t = copy.login;
-const emailSchema = z.object({ email: z.string().trim().email() });
-type EmailForm = z.infer<typeof emailSchema>;
+const schema = z.object({
+  email: z.string().trim().email(),
+  password: z.string().min(8).max(128),
+  confirm: z.string(),
+});
+type Form = z.infer<typeof schema>;
+export const FIELD = 'h-52 rounded-14 border-1.5 bg-white px-16 text-16';
 
-/** Pesan gagal kirim kode per kode error Supabase Auth (DESIGN-GAP: tidak ada di desain). */
-function sendErrorText(e: AuthError): string {
-  if (e.code === 'over_email_send_rate_limit' || e.code === 'over_request_rate_limit' || e.status === 429) {
-    return t.rateLimited;
-  }
-  if (e.code === 'email_address_not_authorized') return t.emailNotAllowed; // SMTP bawaan Supabase
-  if (e.code === 'email_address_invalid') return t.emailError;
-  return t.failed;
-}
-
-/** Langkah 1 onboarding: masuk dengan email OTP / Google (Supabase Auth, §3). Langkah 2–4 di M6. */
+/** Langkah 1 onboarding: buat akun / masuk dengan email + password (keputusan 2026-10-06).
+ * DESIGN-GAP: desain memakai kode OTP email + Google; bingkai, judul, dan teks pembuka tetap. */
 export function Login() {
-  const { session } = useSession();
+  const { token } = useSession();
   const navigate = useNavigate();
-  const location = useLocation();
-  const toast = useToast();
-  const [sentTo, setSentTo] = useState<string | null>(null);
-  const [otp, setOtp] = useState('');
+  const [params] = useSearchParams();
+  // Dari tombol "Mulai ngobrol" kebanyakan pengguna baru → default Daftar. Remaja yang sudah
+  // punya akun biasanya masih punya sesi (7 hari), jadi langsung diarahkan ke chat.
+  const [mode, setMode] = useState<'daftar' | 'masuk'>(params.get('mode') === 'masuk' ? 'masuk' : 'daftar');
   const [busy, setBusy] = useState(false);
-  const [otpError, setOtpError] = useState(false);
-  const form = useForm<EmailForm>({ resolver: zodResolver(emailSchema), defaultValues: { email: '' } });
-  const oauthFailed = (location.state as { oauthFailed?: boolean } | null)?.oauthFailed;
+  const [error, setError] = useState<string | null>(null);
+  const form = useForm<Form>({ resolver: zodResolver(schema), defaultValues: { email: '', password: '', confirm: '' } });
 
-  useEffect(() => {
-    if (oauthFailed) toast(t.googleFailed); // kembali dari Google dengan error / dibatalkan
-  }, [oauthFailed, toast]);
+  if (token) return <Navigate to="/mulai" replace />;
+  const isRegister = mode === 'daftar';
+  const errors = form.formState.errors;
 
-  if (session) return <Navigate to="/mulai" replace />;
-
-  async function sendCode({ email }: EmailForm) {
-    if (!supabase) return;
+  async function submit(v: Form) {
+    if (isRegister && v.password !== v.confirm) return form.setError('confirm', { message: t.confirmMismatch });
     setBusy(true);
-    const { error } = await supabase.auth.signInWithOtp({ email });
-    setBusy(false);
-    if (error) {
-      if (import.meta.env.DEV) console.warn('supabase otp:', error.code); // hanya kode error, tanpa email
-      return toast(sendErrorText(error));
+    setError(null);
+    try {
+      const res = await api<{ access_token: string }>(isRegister ? '/auth/teen/register' : '/auth/teen/login', {
+        method: 'POST',
+        body: { email: v.email.trim(), password: v.password },
+        auth: false,
+      });
+      teenToken.set(res.access_token);
+      navigate('/mulai', { replace: true });
+    } catch (e) {
+      // 401 salah password, 409 email sudah terdaftar, 429 terkunci: pesan backend sudah ramah.
+      setError(e instanceof ApiError && [401, 409, 429].includes(e.status) ? e.message : t.failed);
+    } finally {
+      setBusy(false);
     }
-    if (sentTo) toast(t.resent(email));
-    setSentTo(email);
   }
 
-  async function verify() {
-    if (!supabase || !sentTo) return;
-    setBusy(true);
-    const { error } = await supabase.auth.verifyOtp({ email: sentTo, token: otp, type: 'email' });
-    setBusy(false);
-    if (error) return setOtpError(true);
-    navigate('/mulai', { replace: true });
+  function switchMode() {
+    setMode(isRegister ? 'masuk' : 'daftar');
+    setError(null);
+    form.clearErrors();
   }
 
-  async function google() {
-    if (!supabase) return;
-    // Provider belum diaktifkan di Supabase → jangan lempar remaja ke halaman error JSON mentah.
-    if (!(await providerEnabled('google'))) return toast(t.googleOff);
-    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${window.location.origin}/mulai` } });
-  }
-
-  const emailError = form.formState.errors.email;
   return (
     <OnboardingFrame progress={{ step: 1, total: 4, onBack: () => navigate('/') }}>
       <div className="flex flex-1 animate-in-30 flex-col gap-20 p-24">
         <div className="flex flex-col gap-8">
-          <h1 className="m-0 text-26 font-extrabold leading-120 tracking-tight">{t.title}</h1>
+          <h1 className="m-0 text-26 font-extrabold leading-120 tracking-tight">{isRegister ? t.titleRegister : t.title}</h1>
           <p className="m-0 text-15 leading-155 text-muted">{t.lead}</p>
         </div>
-        {/* DESIGN-GAP: peringatan konfigurasi untuk lingkungan dev */}
-        {!supabase && <p className="m-0 text-13 font-semibold text-warn-text">{t.notConfigured}</p>}
-        <form onSubmit={form.handleSubmit(sendCode)} className="flex flex-col gap-20" noValidate>
+        <form onSubmit={form.handleSubmit(submit)} className="flex flex-col gap-16" noValidate>
           <div className="flex flex-col gap-6">
             <label htmlFor="ob-email" className="text-14 font-semibold">
               {t.emailLabel}
@@ -93,57 +78,66 @@ export function Login() {
               type="email"
               autoComplete="email"
               placeholder={t.emailPlaceholder}
-              aria-invalid={!!emailError}
+              aria-invalid={!!errors.email}
               {...form.register('email')}
-              className={`h-52 rounded-14 border-1.5 bg-white px-16 text-16 ${emailError ? 'border-warn' : 'border-sand-400'}`}
+              className={`${FIELD} ${errors.email ? 'border-warn' : 'border-sand-400'}`}
             />
-            {emailError && <span className="text-13 font-semibold text-warn-text">{t.emailError}</span>}
+            {errors.email && <span className="text-13 font-semibold text-warn-text">{t.emailError}</span>}
           </div>
-          {!sentTo && (
-            <Button type="submit" disabled={busy || !supabase}>
-              {t.sendCode}
-            </Button>
+          <div className="flex flex-col gap-6">
+            <label htmlFor="ob-password" className="text-14 font-semibold">
+              {t.passwordLabel}
+            </label>
+            <input
+              id="ob-password"
+              type="password"
+              autoComplete={isRegister ? 'new-password' : 'current-password'}
+              aria-invalid={!!errors.password}
+              {...form.register('password')}
+              className={`${FIELD} ${errors.password ? 'border-warn' : 'border-sand-400'}`}
+            />
+            {errors.password ? (
+              <span className="text-13 font-semibold text-warn-text">{t.passwordShort}</span>
+            ) : (
+              isRegister && <span className="text-13 text-muted">{t.passwordHint}</span>
+            )}
+          </div>
+          {isRegister && (
+            <div className="flex flex-col gap-6">
+              <label htmlFor="ob-confirm" className="text-14 font-semibold">
+                {t.confirmLabel}
+              </label>
+              <input
+                id="ob-confirm"
+                type="password"
+                autoComplete="new-password"
+                aria-invalid={!!errors.confirm}
+                {...form.register('confirm')}
+                className={`${FIELD} ${errors.confirm ? 'border-warn' : 'border-sand-400'}`}
+              />
+              {errors.confirm && <span className="text-13 font-semibold text-warn-text">{t.confirmMismatch}</span>}
+            </div>
+          )}
+          {error && (
+            <p role="alert" className="m-0 text-13 font-semibold text-warn-text">
+              {error}
+            </p>
+          )}
+          <Button type="submit" disabled={busy}>
+            {isRegister ? t.submitRegister : t.submitLogin}
+          </Button>
+          {!isRegister && (
+            <Link to="/lupa-password" className="self-center text-13 font-bold text-teal-600">
+              {t.forgot}
+            </Link>
           )}
         </form>
-        {sentTo && (
-          <div className="flex animate-in-30 flex-col gap-10 rounded-16 border border-sand-200 bg-white p-16">
-            <label htmlFor="ob-otp" className="text-14 font-bold">
-              {t.otpLabel}
-            </label>
-            <span className="text-13 leading-150 text-muted">{t.otpSentTo(sentTo)}</span>
-            <input
-              id="ob-otp"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              maxLength={6}
-              value={otp}
-              placeholder={t.otpPlaceholder}
-              onChange={(e) => {
-                setOtp(e.target.value.replace(/\D/g, '').slice(0, 6));
-                setOtpError(false);
-              }}
-              className="h-56 rounded-12 border-1.5 border-sand-400 bg-cream px-16 text-center text-24 font-bold tracking-widest"
-            />
-            {otpError && <span className="text-13 font-semibold text-warn-text">{t.otpWrong}</span>}
-            <Button disabled={otp.length < 6 || busy} onClick={verify}>
-              {t.submit}
-            </Button>
-            <Button variant="link" disabled={busy} onClick={form.handleSubmit(sendCode)}>
-              {t.resend}
-            </Button>
-          </div>
-        )}
-        <div className="flex items-center gap-12 text-13 text-muted">
-          <div className="h-1 flex-1 bg-sand-300" />
-          {t.or}
-          <div className="h-1 flex-1 bg-sand-300" />
-        </div>
-        <Button variant="outline" disabled={!supabase} onClick={google} className="flex items-center justify-center gap-10">
-          <span className="flex h-22 w-22 items-center justify-center rounded-full border-2 border-navy text-11 font-extrabold">
-            G
-          </span>
-          {t.google}
-        </Button>
+        <p className="m-0 text-center text-14 text-muted">
+          {isRegister ? t.toLogin : t.toRegister}{' '}
+          <button type="button" onClick={switchMode} className="h-44 bg-transparent px-4 font-bold text-teal-600">
+            {isRegister ? t.toLoginLink : t.toRegisterLink}
+          </button>
+        </p>
       </div>
     </OnboardingFrame>
   );

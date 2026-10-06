@@ -12,7 +12,7 @@ from app.api.dashboard import build_aggregate
 from app.bot import logic
 from app.models import Case, Role, User
 from app.services.chat import WIB
-from tests.conftest import KROBOKAN, MANYARAN, TestSession, make_staff, teen_headers
+from tests.conftest import KROBOKAN, MANYARAN, TestSession, account, make_staff
 from tests.test_chat import _say, _teen
 from tests.test_dashboard import H, M, _teens
 from tests.test_telegram import TG_ID, _linked_teen
@@ -95,7 +95,9 @@ async def test_journal_reminder_once_a_day_and_opt_out(
 async def test_no_reminder_after_journal_today(client: AsyncClient, redis_client: Redis) -> None:
     await _linked_teen(client, redis_client)
     r = await client.post(
-        "/journal", json={"emotion": "senang", "intensity": 3}, headers=teen_headers("tg-teen")
+        "/journal",
+        json={"emotion": "senang", "intensity": 3},
+        headers=await account(client, "tg-teen"),
     )
     assert r.status_code in (200, 201), r.text
 

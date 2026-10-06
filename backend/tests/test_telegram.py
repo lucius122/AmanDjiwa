@@ -1,10 +1,7 @@
 import re
-from datetime import UTC, date, datetime, timedelta
-from types import SimpleNamespace
+from datetime import date
 
-import jwt
 import pytest
-from cryptography.hazmat.primitives.asymmetric import ec
 from httpx import AsyncClient
 from redis.asyncio import Redis
 from sqlalchemy import select
@@ -12,15 +9,14 @@ from sqlalchemy import select
 from app.bot import logic
 from app.models import Case, ChannelLink, RiskLevel
 from app.pipeline import NO_MODELS
-from app.services import auth as auth_mod
-from tests.conftest import KROBOKAN, TestSession, assent_body, teen_headers
+from tests.conftest import KROBOKAN, TestSession, account, assent_body
 
 pytestmark = pytest.mark.anyio
 TG_ID = 777001
 
 
 async def _linked_teen(client: AsyncClient, r: Redis) -> str:
-    h = teen_headers("tg-teen")
+    h = await account(client, "tg-teen")
     body = assent_body(birth_year=date.today().year - 19, pseudonym="Ombak Tenang")
     assert (await client.post("/consent/assent", json=body, headers=h)).status_code == 201
     link = (await client.post("/telegram/link-token", headers=h)).json()
@@ -31,7 +27,7 @@ async def _linked_teen(client: AsyncClient, r: Redis) -> str:
 
 
 async def test_link_code_is_one_time_and_expires(client: AsyncClient, redis_client: Redis) -> None:
-    h = teen_headers("tg-teen")
+    h = await account(client, "tg-teen")
     body = assent_body(birth_year=date.today().year - 19)
     await client.post("/consent/assent", json=body, headers=h)
     link = (await client.post("/telegram/link-token", headers=h)).json()
@@ -48,7 +44,7 @@ async def test_link_code_is_one_time_and_expires(client: AsyncClient, redis_clie
 
 
 async def test_pending_teen_cannot_get_link_code(client: AsyncClient) -> None:
-    h = teen_headers("minor")
+    h = await account(client, "minor")
     await client.post("/consent/assent", json=assent_body(), headers=h)
     assert (await client.post("/telegram/link-token", headers=h)).status_code == 403
 
@@ -114,34 +110,6 @@ async def test_webhook_requires_secret(client: AsyncClient) -> None:
         "/telegram/webhook", json={}, headers={"X-Telegram-Bot-Api-Secret-Token": "salah"}
     )
     assert r.status_code == 403
-
-
-def test_supabase_jwks_es256_tokens(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Project Supabase baru menandatangani token dengan kunci asimetris (JWKS)."""
-    key = ec.generate_private_key(ec.SECP256R1())
-    url = "https://contoh.supabase.co"
-    now = datetime.now(UTC)
-    claims = {"sub": "abc", "aud": "authenticated", "iss": f"{url}/auth/v1",
-              "exp": now + timedelta(minutes=5)}  # fmt: skip
-    token = jwt.encode(claims, key, algorithm="ES256", headers={"kid": "k1"})
-
-    class FakeJwks:
-        def get_signing_key_from_jwt(self, _: str) -> SimpleNamespace:
-            return SimpleNamespace(key=key.public_key())
-
-    # Secret tetap terisi (mis. salah isi Key ID): token ES256 tetap harus lewat JWKS.
-    monkeypatch.setattr(
-        auth_mod.settings, "supabase_jwt_secret", "a3c1e2f0-0000-4000-8000-000000000000"
-    )
-    monkeypatch.setattr(auth_mod.settings, "supabase_url", url)
-    monkeypatch.setattr(auth_mod, "_jwks", FakeJwks())
-    assert auth_mod.read_supabase_sub(token) == "abc"
-    anon = jwt.encode(claims | {"is_anonymous": True}, key, algorithm="ES256")
-    with pytest.raises(jwt.InvalidTokenError):
-        auth_mod.read_supabase_sub(anon)
-    wrong_issuer = jwt.encode(claims | {"iss": "https://lain.supabase.co/auth/v1"}, key, "ES256")
-    with pytest.raises(jwt.InvalidTokenError):
-        auth_mod.read_supabase_sub(wrong_issuer)
 
 
 async def test_pendamping_greeting_also_goes_to_telegram(

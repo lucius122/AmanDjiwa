@@ -10,7 +10,7 @@ from pydantic import BaseModel, EmailStr, Field, field_validator, model_validato
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import current_teen, teen_sub
+from app.api.deps import current_teen
 from app.api.me import MeOut, me_out
 from app.db import get_session
 from app.models import (
@@ -18,7 +18,6 @@ from app.models import (
     GuardianConsent,
     GuardianRelation,
     Kelurahan,
-    Role,
     User,
     UserStatus,
 )
@@ -116,25 +115,21 @@ async def list_kelurahan(session: AsyncSession = Depends(get_session)) -> list[K
 @router.post("/consent/assent", status_code=201)
 async def assent(
     body: AssentIn,
-    sub: str = Depends(teen_sub),
+    user: User = Depends(current_teen),
     session: AsyncSession = Depends(get_session),
 ) -> MeOut:
-    if (await session.execute(select(User.id).where(User.auth_id == sub))).first():
+    """Langkah 2–3 pendaftaran: profil (nama samaran, kelurahan, tahun lahir) + janji remaja."""
+    if user.pseudonym is not None:
         raise HTTPException(409, "Profil sudah ada.")
     if await session.get(Kelurahan, body.kelurahan_id) is None:
         raise HTTPException(422, "Kelurahan tidak dikenal.")
     minor = needs_guardian(body.birth_year, date.today())
-    user = User(
-        role=Role.remaja,
-        auth_id=sub,
-        pseudonym=body.pseudonym,
-        avatar=body.avatar,
-        kelurahan_id=body.kelurahan_id,
-        birth_year=body.birth_year,
-        assented_at=datetime.now(UTC),
-        status=UserStatus.pending_guardian if minor else UserStatus.active,
-    )
-    session.add(user)
+    user.pseudonym = body.pseudonym
+    user.avatar = body.avatar
+    user.kelurahan_id = body.kelurahan_id
+    user.birth_year = body.birth_year
+    user.assented_at = datetime.now(UTC)
+    user.status = UserStatus.pending_guardian if minor else UserStatus.active
     await session.commit()
     return await me_out(session, user)
 
