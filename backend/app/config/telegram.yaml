@@ -13,3 +13,7 @@ continue: Lanjut
 hotline: "{label}: {number}"
 # Label pesan pendamping (sama dengan bubble web: "Kak Dimas · pendamping").
 pendamping: "{nama} · pendamping"
+# Pengingat jurnal harian 19.00 WIB (jobs/). DESIGN-GAP + TODO_VERIFY. Bisa dimatikan: /pengingat
+reminder: "Hai {nama}, gimana harimu? Kalau sempat, isi jurnal hari ini ya: {link}\n\nNggak mau diingatkan lagi? Ketik /pengingat."
+reminder_off: Oke, aku nggak akan kirim pengingat jurnal lagi. Ketik /pengingat kalau mau dinyalakan lagi.
+reminder_on: Oke, aku bakal ingatkan kamu isi jurnal tiap malam jam 19.00.

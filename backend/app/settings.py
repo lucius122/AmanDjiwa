@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     frontend_origin: str = "http://localhost:5173"
     # Demo hackathon (§6.9): izinkan `cli seed-demo` & tandai dasbor kota "data contoh".
     demo_mode: bool = False
+    # Tugas terjadwal (jobs/) di proses API. Matikan kalau ada proses lain yang menjalankannya.
+    run_jobs: bool = True
 
     # Auth remaja (Supabase). Isi JWT secret (HS256, legacy) ATAU biarkan kosong untuk JWKS.
     supabase_url: str = ""

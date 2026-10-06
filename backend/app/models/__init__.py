@@ -281,6 +281,8 @@ class Case(Base):
         ForeignKey("users.id", ondelete="SET NULL")
     )
     referred_to: Mapped[str | None] = mapped_column(String(120))
+    # Email peringatan kasus merah sudah terkirim (jobs.red_alerts). Null = belum.
+    red_alerted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     handled_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True)
     )  # pertama dihubungi

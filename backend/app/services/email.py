@@ -25,3 +25,13 @@ async def send_guardian_request(to: str, link: str, days: int) -> None:
     msg["To"] = to
     msg.set_content(tpl["body"].format(link=link, days=days, contact=_COPY["contact"]))
     await asyncio.to_thread(_send, msg)
+
+
+async def send_plain(to: str, subject: str, body: str) -> None:
+    """Email teks biasa untuk staf (peringatan kasus merah, laporan mingguan)."""
+    msg = EmailMessage()
+    msg["Subject"] = subject
+    msg["From"] = settings.smtp_from
+    msg["To"] = to
+    msg.set_content(body)
+    await asyncio.to_thread(_send, msg)

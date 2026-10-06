@@ -18,3 +18,27 @@ guardian_request:
 
 # Di desain tertulis "[ kontak ]". Jangan dikarang.
 contact: TODO_VERIFY
+
+# ---------- untuk staf (jobs/). DESIGN-GAP: tidak ada di desain. TODO_VERIFY: review tim. ----------
+# Sengaja tanpa nama samaran / isi pesan: email bisa terbuka di perangkat bersama (§7).
+red_alert:
+  subject: Kasus merah baru · Kelurahan {kelurahan}
+  body: |
+    Ada kasus risiko merah baru yang belum ditangani di Kelurahan {kelurahan}.
+    Buka antrian sekarang: {link}
+
+    Email ini sengaja tidak memuat identitas atau isi pesan.
+    Notifikasi ini bisa dimatikan di menu Pengaturan dasbor ("Notifikasi kasus merah").
+
+weekly_report:
+  subject: Laporan mingguan AmanDjiwa · {periode}
+  intro: Ringkasan {periode}, Kecamatan Semarang Barat. Data agregat anonim; kelurahan dengan < {k} pengguna tidak ditampilkan.
+  kpis: |
+    Pengguna aktif: {active}
+    Sesi: {sessions}
+    Kasus oranye/merah disapa < 15 menit: {handled}
+    Rujukan: {referrals}
+  not_enough: Data periode ini belum cukup (< {k} pengguna) untuk ditampilkan.
+  top_kelurahan: "Proporsi risiko tertinggi (oranye + merah):"
+  top_topics: "Topik pemicu teratas:"
+  footer: "Dasbor lengkap: {link}"

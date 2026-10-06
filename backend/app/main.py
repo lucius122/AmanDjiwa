@@ -1,11 +1,14 @@
 import logging
 import time
-from collections.abc import Awaitable, Callable
+from collections.abc import AsyncIterator, Awaitable, Callable
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 
+from app import jobs
 from app.api import auth, cases, chat, consent, dashboard, journal, me, telegram
+from app.bot import get_bot
 from app.settings import settings
 
 # Log hanya: method, pola route (bukan path asli: bisa berisi token), status, latensi, user_id.
@@ -15,7 +18,18 @@ logging.getLogger("uvicorn.access").disabled = True
 logging.getLogger("httpx").setLevel(logging.WARNING)  # INFO-nya mencatat URL keluar (berisi id)
 log = logging.getLogger("amandjiwa.http")
 
-app = FastAPI(title="AmanDjiwa API")
+
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    scheduler = jobs.start() if settings.run_jobs else None
+    yield
+    if scheduler:
+        scheduler.shutdown(wait=False)
+    if bot := get_bot():
+        await bot.session.close()
+
+
+app = FastAPI(title="AmanDjiwa API", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[settings.frontend_origin],

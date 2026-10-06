@@ -74,6 +74,20 @@ async def on_start(
     return [OutMsg(TG["linked"].format(nama=user.pseudonym or "kamu"))]
 
 
+async def toggle_reminder(session: AsyncSession, telegram_id: int) -> list[OutMsg]:
+    """/pengingat: nyalakan/matikan pengingat jurnal harian (default menyala)."""
+    user = await _linked_user(session, telegram_id)
+    if user is None or user.status != UserStatus.active:
+        return [OutMsg(TG["not_linked"])]
+    on = user.settings.get("journal_reminder", True) is False
+    user.settings = {
+        **user.settings,
+        "journal_reminder": on,
+    }  # dict baru: JSONB tidak dilacak in-place
+    await session.commit()
+    return [OutMsg(TG["reminder_on" if on else "reminder_off"])]
+
+
 # ---------- pesan & tombol ----------
 
 

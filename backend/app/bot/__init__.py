@@ -5,7 +5,7 @@ import logging
 from functools import cache
 
 from aiogram import Bot, Dispatcher, F, Router
-from aiogram.filters import CommandObject, CommandStart
+from aiogram.filters import Command, CommandObject, CommandStart
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from app.bot import logic
@@ -44,6 +44,15 @@ async def on_start(message: Message, command: CommandObject) -> None:
         return
     async with SessionLocal() as session:
         outs = await logic.on_start(redis, session, message.from_user.id, command.args)
+    await _send(message, outs)
+
+
+@router.message(Command("pengingat"))
+async def on_reminder(message: Message) -> None:
+    if message.from_user is None:
+        return
+    async with SessionLocal() as session:
+        outs = await logic.toggle_reminder(session, message.from_user.id)
     await _send(message, outs)
 
 
