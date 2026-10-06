@@ -20,6 +20,7 @@ from app.db import get_session
 from app.models import Kelurahan, Role, User, UserStatus
 from app.services.audit import record_access
 from app.services.auth import hash_password, new_temp_password
+from app.settings import settings
 
 router = APIRouter(prefix="/admin/staff", tags=["admin"])
 StaffRole = Literal["pendamping", "konselor", "admin_kota"]
@@ -71,7 +72,7 @@ async def _out(session: AsyncSession, user: User) -> StaffAccount:
         kelurahan_id=user.kelurahan_id,
         kelurahan_name=kel.name if kel else None,
         status=user.status,
-        needs_setup=user.totp_secret_enc is None,
+        needs_setup=settings.staff_totp and user.totp_secret_enc is None,
         created_at=user.created_at,
     )
 

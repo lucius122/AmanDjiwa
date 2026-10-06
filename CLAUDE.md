@@ -53,7 +53,7 @@ Pengguna dan peran (RBAC):
 
 **Auth**
 - Remaja: email + password di database sendiri (keputusan 2026-10-06, menggantikan Supabase Auth). Password di-hash argon2; email TIDAK disimpan polos (HMAC untuk mencari akun + AES-GCM hanya untuk link reset password). Wajib nama samaran, **tidak boleh** minta nama asli, NIK, atau alamat.
-- Staf: email + password + TOTP 2FA, JWT dengan claim `role` dan `kelurahan_id`. Akun dibuat admin kota dengan password sementara; saat login pertama staf memasang TOTP dan mengganti password sendiri (admin tidak pernah melihat kunci 2FA). Admin kota pertama dibuat lewat `cli create-staff` atau variabel `BOOTSTRAP_ADMIN_EMAIL/PASSWORD` (hanya bila belum ada admin kota).
+- Staf: email + password + TOTP 2FA, JWT dengan claim `role` dan `kelurahan_id`. Akun dibuat admin kota dengan password sementara; saat login pertama staf memasang TOTP dan mengganti password sendiri (admin tidak pernah melihat kunci 2FA). Admin kota pertama dibuat lewat `cli create-staff` atau variabel `BOOTSTRAP_ADMIN_EMAIL/PASSWORD` (hanya bila belum ada admin kota). *(Keputusan 2026-10-06: TOTP staf dimatikan dulu lewat `STAFF_TOTP=false`; wajib dinyalakan lagi sebelum dipakai dengan data remaja sungguhan.)*
 
 **Infra**: Docker Compose (frontend, backend, postgres, redis, caddy) di VPS, ATAU (keputusan 2026-10-06) frontend di Vercel + backend, Postgres, Redis di Railway (Vercel meneruskan `/api` ke backend). Semua secret lewat `.env` / variabel environment.
 

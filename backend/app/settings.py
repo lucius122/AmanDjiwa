@@ -25,6 +25,10 @@ class Settings(BaseSettings):
     bootstrap_admin_email: str = ""
     bootstrap_admin_password: str = ""
     bootstrap_admin_name: str = "Admin Kota"
+    # Kode authenticator (TOTP) saat login staf. Keputusan 2026-10-06: DIMATIKAN DULU (staf masuk
+    # cukup email + password). STAFF_TOTP=true menyalakannya lagi, termasuk pasang authenticator
+    # di login pertama. Wajib dinyalakan sebelum dipakai dengan data remaja sungguhan.
+    staff_totp: bool = False
 
     redis_url: str = "redis://127.0.0.1:6379/0"
 

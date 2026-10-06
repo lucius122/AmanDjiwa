@@ -76,3 +76,17 @@ async def test_teen_and_staff_tokens_do_not_cross(client: AsyncClient) -> None:
     staff = (await staff_login(client, secret))["access_token"]
     assert (await client.get("/me", headers=bearer(staff))).status_code == 401
     assert (await client.get("/auth/staff/me", headers=await account(client))).status_code == 401
+
+
+async def test_totp_off_signs_in_with_password_only(
+    client: AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from app.settings import settings
+
+    monkeypatch.setattr(settings, "staff_totp", False)  # keputusan 2026-10-06
+    await make_staff(Role.konselor)
+    r = await _login(client)
+    assert r.status_code == 200 and "pre_auth_token" not in r.json()
+    me = await client.get("/auth/staff/me", headers=bearer(r.json()["access_token"]))
+    assert me.json()["role"] == "konselor"
+    assert (await _login(client, password="salah-sekali")).status_code == 401

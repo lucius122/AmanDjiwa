@@ -33,6 +33,7 @@ from app.services.auth import (
     verify_password,
 )
 from app.services.crypto import decrypt, encrypt
+from app.settings import settings
 
 router = APIRouter(prefix="/auth/staff", tags=["auth"])
 
@@ -93,7 +94,7 @@ async def _staff_out(session: AsyncSession, user: User) -> StaffOut:
 
 
 @router.post("/login")
-async def login(body: LoginIn, session: AsyncSession = Depends(get_session)) -> LoginOut:
+async def login(body: LoginIn, session: AsyncSession = Depends(get_session)) -> LoginOut | TokenOut:
     user = (
         await session.execute(
             select(User).where(User.email == body.email.lower(), User.role != Role.remaja)
@@ -106,6 +107,8 @@ async def login(body: LoginIn, session: AsyncSession = Depends(get_session)) -> 
         if user is not None:
             await register_failure(session, user)
         raise HTTPException(401, "Email atau password salah.")
+    if not settings.staff_totp:  # OTP staf dimatikan dulu (keputusan 2026-10-06)
+        return await _signed_in(session, user, "staff_login")
     if user.totp_secret_enc is None:  # akun baru / di-reset admin kota
         return LoginOut(
             pre_auth_token=issue_token(user.id, "pre_setup", PRE_SETUP_TTL), setup_required=True

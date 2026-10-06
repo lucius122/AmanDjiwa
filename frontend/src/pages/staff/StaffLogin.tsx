@@ -52,8 +52,9 @@ export function StaffLogin() {
   }
 
   async function login(body: Form) {
-    const r = await run(() => api<LoginOut>('/auth/staff/login', { method: 'POST', body, auth: false }));
+    const r = await run(() => api<LoginOut | StaffToken>('/auth/staff/login', { method: 'POST', body, auth: false }));
     if (!r) return;
+    if ('access_token' in r) return signedIn(r); // OTP staf dimatikan di backend (STAFF_TOTP=false)
     setPre(r.pre_auth_token);
     if (!r.setup_required) return;
     const s = await run(() =>

@@ -142,8 +142,10 @@ browser hanya bicara ke satu domain (tanpa CORS).
    `https://<domain>/health` menjawab `{"status":"ok"}`. Jawaban 502 "Application failed to
    respond" = aplikasi berhenti saat start (lihat Deploy Logs) atau target port tidak sama.
 5. Login pertama admin kota: buka `https://<domain-vercel>/staf/masuk`, masuk dengan
-   `BOOTSTRAP_ADMIN_EMAIL` + `BOOTSTRAP_ADMIN_PASSWORD`, pasang authenticator, buat password
-   baru, lalu hapus kedua variabel itu di Railway. Staf lain ditambahkan dari menu **Akun staf**.
+   `BOOTSTRAP_ADMIN_EMAIL` + `BOOTSTRAP_ADMIN_PASSWORD`, lalu hapus kedua variabel itu di Railway.
+   Staf lain ditambahkan dari menu **Akun staf**. Kode authenticator staf sedang dimatikan
+   (`STAFF_TOTP=false`, default); dengan `STAFF_TOTP=true` login pertama meminta pasang
+   authenticator + password baru.
 6. Daftarkan webhook bot Telegram. Perintah ini harus jalan **di dalam** container backend
    (database Railway memakai jaringan privat), mis. lewat Railway CLI:
    ```bash
