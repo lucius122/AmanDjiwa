@@ -1,0 +1,149 @@
+/*
+ * Design token AmanDjiwa — diekstrak dari design/amandjiwa-prototype.html
+ * (versi terbaca: design/_unpacked/template.html).
+ * SATU-SATUNYA tempat nilai warna/radius/shadow mentah. Komponen wajib pakai
+ * kelas Tailwind yang dipetakan ke variabel ini (lihat tailwind.config.ts).
+ */
+:root {
+  /* ---------- font ---------- */
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+
+  /* ---------- dasar ---------- */
+  --c-white: #fff;
+  --c-navy: #1e3a5f; /* teks utama, tombol gelap, top bar, footer */
+  --c-cream: #faf8f5; /* latar halaman */
+
+  /* teks sekunder */
+  --c-muted: #4a5d78;
+  --c-muted-strong: #3b5470;
+  --c-muted-deep: #2f4b66;
+  --c-muted-placeholder: #6b7a90;
+
+  /* di atas latar navy */
+  --c-on-navy-muted: #c9d4e3;
+  --c-on-navy-line: #5c7598;
+
+  /* netral hangat: garis, border, latar sekunder */
+  --c-sand-100: #f1ece5;
+  --c-sand-150: #efe9e1;
+  --c-sand-200: #ede7df; /* border kartu */
+  --c-sand-300: #e7e1d8; /* divider */
+  --c-sand-400: #ddd5ca; /* border field */
+  --c-sand-500: #d5cec4; /* switch mati */
+
+  /* teal (brand) */
+  --c-teal-25: #f3faf9;
+  --c-teal-30: #f1f7f6;
+  --c-teal-50: #e6f4f2;
+  --c-teal-75: #e2f5f2;
+  --c-teal-100: #ddf2ef; /* mint */
+  --c-teal-200: #b8dfdb;
+  --c-teal-300: #9fd3ce;
+  --c-teal-400: #5fd3cb;
+  --c-teal-500: #1ba39c; /* aksen, logo, focus ring */
+  --c-teal-600: #0e7c76; /* tombol utama */
+  --c-teal-700: #0b6560; /* hover tombol utama */
+  --c-teal-800: #0b5f5a; /* teks di atas mint */
+  --c-teal-muted: #5e8f8b;
+  --c-teal-disabled: #9bb3b0;
+
+  /* sky */
+  --c-sky-100: #e3eef8;
+  --c-sky-200: #d4e4f3;
+
+  /* peach (bantuan darurat) */
+  --c-peach-100: #fbebdd;
+  --c-peach-200: #f7dec9;
+  --c-peach-300: #e8b48c;
+  --c-peach-600: #a3541c;
+  --c-peach-700: #6b5545;
+  --c-peach-800: #5a3a22;
+
+  /* lavender (krisis, pendamping) */
+  --c-lavender-100: #e9e5f7;
+  --c-lavender-200: #d9d1f2;
+  --c-lavender-300: #c6bdea;
+  --c-lavender-600: #5b4b9a;
+  --c-lavender-700: #4a3c86;
+  --c-lavender-800: #3d3566;
+
+  /* butter (grounding) */
+  --c-butter-100: #fbf1d3;
+  --c-butter-300: #e9c96a;
+  --c-butter-700: #7a5a12;
+  --c-butter-800: #5a4a22;
+
+  /* avatar */
+  --c-rose-100: #f7e1e6;
+  --c-rose-700: #9a3a55;
+  --c-leaf-100: #e4f1de;
+  --c-leaf-700: #3c6b2f;
+
+  /* status */
+  --c-warn: #d9822b;
+  --c-warn-text: #9a4a0f;
+  --c-success-text: #23703f;
+
+  /* transparan */
+  --c-white-12: rgba(255, 255, 255, 0.12);
+  --c-white-35: rgba(255, 255, 255, 0.35);
+  --c-white-50: rgba(255, 255, 255, 0.5);
+  --c-white-60: rgba(255, 255, 255, 0.6);
+  --c-overlay: rgba(30, 58, 95, 0.4);
+
+  /* ---------- level risiko: HANYA dasbor pendamping/konselor/kota ---------- */
+  --c-risk-red-tint: #fbe3e0;
+  --c-risk-red-text: #9a2a22;
+  --c-risk-red-dot: #c2372d;
+  --c-risk-red-row: #fff6f4;
+  --c-risk-red-row-line: #f3d3ce;
+  --c-risk-red-bar: #c9473a;
+  --c-risk-orange-tint: #fdebd9;
+  --c-risk-orange-text: #8f430c;
+  --c-risk-orange-dot: #e07b2e;
+  --c-risk-orange-bar: #e58a3e;
+  --c-risk-yellow-tint: #fbf3d0;
+  --c-risk-yellow-text: #6e5400;
+  --c-risk-yellow-dot: #d9a916;
+  --c-risk-yellow-bar: #e8c547;
+  --c-risk-green-bar: #5db37e;
+
+  /* skala peta kota (% berisiko) */
+  --c-map-1: #f7efd4; /* < 7% */
+  --c-map-2: #f2d27f; /* 7–10% */
+  --c-map-3: #e79a55; /* 11–14% */
+  --c-map-4: #b84a36; /* ≥ 15% */
+
+  /* ---------- emosi jurnal (wajah / petak kalender) ---------- */
+  --c-emo-senang: #fbe7a6;
+  --c-emo-senang-tile: #f6da8b;
+  --c-emo-sedih: #cfe0f3;
+  --c-emo-sedih-tile: #b4cdea;
+  --c-emo-cemas: #ddd6f3;
+  --c-emo-cemas-tile: #c9bfec;
+  --c-emo-marah: #f8d3c0;
+  --c-emo-marah-tile: #f2bba0;
+  --c-emo-malu: #f7d6de;
+  --c-emo-malu-tile: #f1c3cf;
+  --c-emo-netral: #dcebe7;
+  --c-emo-netral-tile: #cfe3df;
+
+  /* garis tren emosi (dasbor kota) */
+  --c-chart-senang: #e0b53a;
+  --c-chart-cemas: #7b68c4;
+  --c-chart-sedih: #4f86c6;
+  --c-chart-netral: #1ba39c;
+
+  /* ---------- radius ---------- */
+  --r-bubble-in: 18px 18px 18px 6px; /* bubble bot / pendamping */
+  --r-bubble-out: 18px 18px 6px 18px; /* bubble remaja */
+  --r-sheet: 24px 24px 0 0; /* bottom sheet di mobile */
+  --r-risk-red: 2px; /* bentuk titik risiko: beda bentuk, bukan cuma warna */
+  --r-risk-orange: 50%;
+  --r-risk-yellow: 50% 50% 0 50%;
+
+  /* ---------- shadow ---------- */
+  --shadow-panel: 0 12px 40px rgba(30, 58, 95, 0.1);
+  --shadow-toast: 0 10px 30px rgba(30, 58, 95, 0.25);
+  --shadow-lift: 0 6px 16px rgba(30, 58, 95, 0.16);
+}
