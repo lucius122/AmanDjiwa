@@ -17,4 +17,5 @@ RUN useradd --system --no-create-home app
 USER app
 EXPOSE 8000
 # Migrasi dulu, baru API. Access log uvicorn dimatikan di app (path bisa memuat token, §7).
-CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers"]
+# PORT diisi Railway; di Docker Compose default 8000.
+CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --proxy-headers"]

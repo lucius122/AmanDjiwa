@@ -20,11 +20,6 @@ class Settings(BaseSettings):
     # Tugas terjadwal (jobs/) di proses API. Matikan kalau ada proses lain yang menjalankannya.
     run_jobs: bool = True
 
-    # Auth remaja (Supabase). Isi JWT secret (HS256, legacy) ATAU biarkan kosong untuk JWKS.
-    supabase_url: str = ""
-    supabase_jwt_secret: str = ""
-    supabase_service_role_key: str = ""  # untuk menghapus akun auth saat DELETE /me
-
     redis_url: str = "redis://127.0.0.1:6379/0"
 
     # LLM opsional untuk balasan level hijau (§6.4). Kosong = LLM mati, pakai bank respons saja.
@@ -42,6 +37,15 @@ class Settings(BaseSettings):
     smtp_user: str = ""
     smtp_password: str = ""
     smtp_from: str = "AmanDjiwa <no-reply@amandjiwa.local>"
+
+    @field_validator("database_url")
+    @classmethod
+    def _asyncpg_scheme(cls, v: str) -> str:
+        """Railway memberi postgres:// atau postgresql://; SQLAlchemy async butuh +asyncpg."""
+        for prefix in ("postgres://", "postgresql://"):
+            if v.startswith(prefix):
+                return "postgresql+asyncpg://" + v.removeprefix(prefix)
+        return v
 
     @field_validator("message_enc_key")
     @classmethod
