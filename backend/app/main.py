@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import jobs
 from app.api import admin, auth, cases, chat, consent, dashboard, journal, me, teen_auth, telegram
+from app.bootstrap import ensure_first_admin
 from app.bot import get_bot
 from app.settings import settings
 
@@ -21,6 +22,10 @@ log = logging.getLogger("amandjiwa.http")
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    try:
+        await ensure_first_admin()
+    except Exception as e:  # noqa: BLE001 — jangan gagalkan start; tercatat tanpa PII
+        log.error("bootstrap_admin_failed error=%s", type(e).__name__)
     scheduler = jobs.start() if settings.run_jobs else None
     yield
     if scheduler:

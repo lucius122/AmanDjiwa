@@ -19,6 +19,12 @@ class Settings(BaseSettings):
     demo_mode: bool = False
     # Tugas terjadwal (jobs/) di proses API. Matikan kalau ada proses lain yang menjalankannya.
     run_jobs: bool = True
+    # Admin kota PERTAMA dibuat otomatis saat start kalau belum ada admin kota sama sekali
+    # (hosting tanpa akses terminal, mis. Railway). Login pertama tetap wajib pasang authenticator
+    # + ganti password. Hapus variabelnya setelah admin berhasil masuk.
+    bootstrap_admin_email: str = ""
+    bootstrap_admin_password: str = ""
+    bootstrap_admin_name: str = "Admin Kota"
 
     redis_url: str = "redis://127.0.0.1:6379/0"
 

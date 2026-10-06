@@ -71,8 +71,9 @@ sintetis**.
   link reset password remaja, peringatan kasus merah, dan laporan mingguan.
   - Yang dibutuhkan: host, port, user, password, alamat pengirim → variabel `SMTP_*` di Railway.
   - Tanpa SMTP, remaja di bawah 18 tahun tidak bisa menyelesaikan pendaftaran (email wali gagal).
-- [ ] **7. Admin kota pertama:** nama dan email kerja. Akun ini dibuat lewat terminal; pendamping,
-  konselor, dan admin kota lain lalu ditambahkan sendiri lewat halaman **Akun staf**.
+- [ ] **7. Admin kota pertama:** isi `BOOTSTRAP_ADMIN_EMAIL` dan `BOOTSTRAP_ADMIN_PASSWORD`
+  (sementara) di Railway; akun dibuat otomatis saat backend menyala. Pendamping, konselor, dan
+  admin kota lain lalu ditambahkan sendiri lewat halaman **Akun staf**.
 - [ ] **8. Kontak tim** untuk email & halaman persetujuan orang tua (sekarang tertulis
   "[ kontak ]"): `backend/app/config/emails.yaml` (`contact`) dan `frontend/src/lib/copy.ts`.
 - [ ] **9. Daftar staf asli:** nama tampil, email, peran (pendamping/konselor/admin kota), dan

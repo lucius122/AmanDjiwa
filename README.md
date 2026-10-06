@@ -132,14 +132,23 @@ browser hanya bicara ke satu domain (tanpa CORS).
    - `FRONTEND_ORIGIN` = URL Vercel (mis. `https://amandjiwa.vercel.app`)
    - SMTP asli untuk email izin wali, reset password, dan peringatan merah: `SMTP_HOST`,
      `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` (mis. Gmail + Sandi aplikasi)
+   - `PORT` = `8000` (supaya port aplikasi pasti sama dengan target port domain)
+   - admin kota pertama: `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_PASSWORD` (sementara, ≥ 12
+     karakter), opsional `BOOTSTRAP_ADMIN_NAME`. Dibuat otomatis saat start **hanya kalau belum ada
+     admin kota**; hapus kedua variabel setelah admin berhasil login pertama.
    - opsional: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET`, `NVIDIA_API_KEY`
-4. Settings → Networking → **Generate Domain**, catat domainnya.
-5. Buat admin kota pertama dan daftarkan webhook bot. Perintah ini harus jalan **di dalam**
-   container backend (database Railway memakai jaringan privat), mis. lewat Railway CLI:
+4. Settings → Networking → **Generate Domain** dengan target port **8000**, catat domainnya.
+   Cek: Deploy Logs harus berisi `Uvicorn running on http://0.0.0.0:8000` dan
+   `https://<domain>/health` menjawab `{"status":"ok"}`. Jawaban 502 "Application failed to
+   respond" = aplikasi berhenti saat start (lihat Deploy Logs) atau target port tidak sama.
+5. Login pertama admin kota: buka `https://<domain-vercel>/staf/masuk`, masuk dengan
+   `BOOTSTRAP_ADMIN_EMAIL` + `BOOTSTRAP_ADMIN_PASSWORD`, pasang authenticator, buat password
+   baru, lalu hapus kedua variabel itu di Railway. Staf lain ditambahkan dari menu **Akun staf**.
+6. Daftarkan webhook bot Telegram. Perintah ini harus jalan **di dalam** container backend
+   (database Railway memakai jaringan privat), mis. lewat Railway CLI:
    ```bash
    railway link              # pilih proyek & layanan backend
    railway ssh               # shell di dalam container
-   python -m app.cli create-staff --email ... --name "Dinkes Kota" --role admin_kota
    python -m app.cli telegram-webhook --url https://<domain-railway>/telegram/webhook
    ```
    Setelah webhook terdaftar, jangan jalankan bot mode polling di laptop dengan token yang sama

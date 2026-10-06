@@ -22,6 +22,8 @@ os.environ["JWT_SECRET"] = secrets.token_urlsafe(48)
 os.environ["NVIDIA_API_KEY"] = ""
 os.environ["DEMO_MODE"] = "false"  # test_demo menyalakannya sendiri
 os.environ["RUN_JOBS"] = "false"  # tes memanggil fungsi job langsung
+os.environ["BOOTSTRAP_ADMIN_EMAIL"] = ""  # tes bootstrap mengisinya sendiri
+os.environ["BOOTSTRAP_ADMIN_PASSWORD"] = ""
 os.environ["TELEGRAM_BOT_TOKEN"] = ""  # tes tidak pernah memanggil API Telegram sungguhan
 os.environ["TELEGRAM_WEBHOOK_SECRET"] = ""
 os.environ["REDIS_URL"] = REDIS_URL = os.environ.get("TEST_REDIS_URL", "redis://127.0.0.1:6379/15")
