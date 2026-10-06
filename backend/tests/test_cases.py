@@ -1,13 +1,27 @@
 """Dasbor pendamping/konselor: RBAC per role, audit akses, alur status, sapaan, catatan, jadwal."""
 
-from datetime import UTC, datetime, timedelta
+import uuid
+from datetime import UTC, datetime, time, timedelta
 from typing import Any
 
 import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
 
-from app.models import AuditLog, CaseNote, FollowUp, Role
+from app.models import (
+    AuditLog,
+    Case,
+    CaseNote,
+    Conversation,
+    Emotion,
+    FollowUp,
+    JournalEntry,
+    Message,
+    Role,
+    Sender,
+)
+from app.services.chat import WIB
+from app.services.crypto import encrypt
 from tests.conftest import KROBOKAN, MANYARAN, TestSession, bearer, make_staff, staff_login
 from tests.test_chat import _say, _teen
 
@@ -182,6 +196,10 @@ async def test_follow_ups_are_personal(client: AsyncClient) -> None:
     async with TestSession() as s:
         (raw,) = [f.title_enc for f in (await s.execute(select(FollowUp))).scalars()]
     assert b"Bintang" not in raw
+    item_id = (await client.get("/follow-ups", headers=h)).json()[0]["id"]
+    assert (await client.delete(f"/follow-ups/{item_id}", headers=other)).status_code == 404
+    assert (await client.delete(f"/follow-ups/{item_id}", headers=h)).status_code == 204
+    assert (await client.get("/follow-ups", headers=h)).json() == []
 
 
 async def test_staff_settings(client: AsyncClient) -> None:
@@ -194,3 +212,37 @@ async def test_staff_settings(client: AsyncClient) -> None:
     new = {"notif_red": False, "sound": True, "compact": False}
     assert (await client.put("/auth/staff/settings", json=new, headers=h)).json() == new
     assert (await client.get("/auth/staff/settings", headers=h)).json() == new
+
+
+async def test_behavior_markers_late_night_and_journal_stopped(client: AsyncClient) -> None:
+    x = await _setup(client)
+    (row,) = await _queue(client, x["pendamping"])
+    today = datetime.now(WIB).date()
+    async with TestSession() as s:
+        case = await s.get(Case, uuid.UUID(row["id"]))
+        assert case is not None
+        conv = (
+            await s.execute(select(Conversation).where(Conversation.user_id == case.user_id))
+        ).scalar_one()
+        for days_ago in (2, 4):  # dua malam berbeda, pukul 01.30 WIB
+            at = datetime.combine(today - timedelta(days=days_ago), time(1, 30), WIB)
+            s.add(
+                Message(
+                    conversation_id=conv.id,
+                    sender=Sender.remaja,
+                    encrypted_text=encrypt("x"),
+                    created_at=at,
+                )
+            )
+        for days_ago in (5, 6, 7):  # rutin, lalu berhenti 5 hari
+            s.add(
+                JournalEntry(
+                    user_id=case.user_id,
+                    entry_date=today - timedelta(days=days_ago),
+                    emotion=Emotion.sedih,
+                    intensity=3,
+                )
+            )
+        await s.commit()
+    c = (await client.get(f"/cases/{row['id']}", headers=x["pendamping"])).json()
+    assert "Aktif larut malam" in c["markers"] and "Jurnal berhenti 5 hari" in c["markers"]

@@ -16,6 +16,7 @@ _TOPICS = {k: [compile_pattern(w) for w in v["words"]] for k, v in _cfg["topics"
 LABELS: dict[str, str] = {k: v["label"] for k, v in _cfg["flags"].items()} | _cfg["labels"]
 TOPIC_LABELS: dict[str, str] = {k: v["label"] for k, v in _cfg["topics"].items()}
 TRIGGER_LABELS: dict[str, str] = _cfg["trigger_labels"]
+BEHAVIOR: dict[str, dict[str, str | int]] = _cfg["behavior"]
 
 
 @dataclass(frozen=True)

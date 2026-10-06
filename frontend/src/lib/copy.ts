@@ -384,14 +384,17 @@ export const copy = {
     toastNote: 'Catatan disimpan',
     toastContacted: 'Status: sedang ditangani',
     toastDone: 'Kasus ditandai selesai',
-    toastReferred: (dest: string) => `Rujukan ke ${dest} dikirim`,
+    toastReferred: (dest: string) => `Rujukan ke ${dest} dicatat`, // lihat referSheet.lead
     actionFailed: 'Belum tersimpan. Coba lagi.', // DESIGN-GAP
     loadFailed: 'Detail kasus belum bisa dimuat.', // DESIGN-GAP
   },
 
   referSheet: {
     title: (name: string) => `Rujuk ${name}`,
-    lead: 'Pilih tujuan rujukan. Ringkasan kasus (tanpa isi chat lengkap) akan dikirim.',
+    // DESIGN-GAP (disengaja): desain menulis "Ringkasan kasus … akan dikirim", padahal pengiriman
+    // otomatis belum ada (protokol & persetujuan remaja belum diputuskan tim). Pendamping tidak boleh
+    // mengira tujuan rujukan sudah dikabari.
+    lead: 'Pilih tujuan rujukan. Rujukan dicatat di kasus ini; untuk sekarang hubungi tujuannya langsung.',
     // TODO_VERIFY: daftar tujuan rujukan resmi per kelurahan (dari desain, belum diverifikasi).
     targets: [
       { label: 'Puskesmas Krobokan', sub: 'Poli jiwa · Senin–Sabtu' },
@@ -412,6 +415,8 @@ export const copy = {
     end: 'Selesai (opsional)',
     save: 'Simpan jadwal',
     saved: 'Jadwal disimpan',
+    remove: (title: string) => `Hapus jadwal ${title}`, // DESIGN-GAP
+    removed: 'Jadwal dihapus',
     failed: 'Jadwal belum tersimpan. Coba lagi.',
   },
 

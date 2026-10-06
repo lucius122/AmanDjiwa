@@ -7,14 +7,14 @@ Isi pesan hanya pesan pemicu, dan setiap pembukaan kasus/pesan tercatat di audit
 
 import uuid
 from collections import Counter
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, date, datetime, time, timedelta
 from typing import Literal, Self
 
 import yaml
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import AwareDatetime, BaseModel, Field, model_validator
 from redis.asyncio import Redis
-from sqlalchemy import Select, func, select
+from sqlalchemy import Select, distinct, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import case_scope, current_staff
@@ -28,9 +28,11 @@ from app.models import (
     CaseStatus,
     Channel,
     ChannelLink,
+    Conversation,
     Emotion,
     FollowUp,
     Instrument,
+    JournalEntry,
     Kelurahan,
     Message,
     RiskAssessment,
@@ -40,7 +42,7 @@ from app.models import (
     Sender,
     User,
 )
-from app.pipeline.markers import LABELS, TOPIC_LABELS, TRIGGER_LABELS
+from app.pipeline.markers import BEHAVIOR, LABELS, TOPIC_LABELS, TRIGGER_LABELS
 from app.pipeline.responder import BANK
 from app.redis import get_redis
 from app.screening import gad7, phq9
@@ -192,6 +194,43 @@ def _marker_label(key: str) -> str | None:
     return LABELS.get(key) or TRIGGER_LABELS.get(key)
 
 
+async def _behavior_markers(session: AsyncSession, user_id: uuid.UUID, today: date) -> list[str]:
+    """Penanda perilaku 14 hari (desain): aktif larut malam, jurnal berhenti."""
+    since = today - timedelta(days=store.TRAJECTORY_DAYS - 1)
+    out: list[str] = []
+    late, stop = BEHAVIOR["late_night"], BEHAVIOR["journal_stopped"]
+    local = func.timezone("Asia/Jakarta", Message.created_at)
+    nights = (
+        await session.execute(
+            select(func.count(distinct(func.date(local))))
+            .join(Conversation, Conversation.id == Message.conversation_id)
+            .where(
+                Conversation.user_id == user_id,
+                Message.sender == Sender.remaja,
+                Message.created_at >= datetime.combine(since, time(), store.WIB),
+                func.extract("hour", local) < late["before_hour"],
+            )
+        )
+    ).scalar_one()
+    if nights >= int(late["min_nights"]):
+        out.append(str(late["label"]))
+    dates = (
+        (
+            await session.execute(
+                select(JournalEntry.entry_date).where(
+                    JournalEntry.user_id == user_id, JournalEntry.entry_date >= since
+                )
+            )
+        )
+        .scalars()
+        .all()
+    )
+    gap = (today - max(dates)).days if dates else 0
+    if len(dates) >= int(stop["min_entries"]) and gap >= int(stop["min_days"]):
+        out.append(str(stop["label"]).format(n=gap))
+    return out
+
+
 async def _screening(session: AsyncSession, user_id: uuid.UUID, inst: Instrument) -> ScreeningOut:
     """Skor lengkap terakhir. Belum pernah lengkap (mis. baru PHQ-4) = "Belum lengkap" (§6.5)."""
     total = (
@@ -283,7 +322,8 @@ async def get_case(
         ],
         phq9=await _screening(session, teen.id, Instrument.phq9),
         gad7=await _screening(session, teen.id, Instrument.gad7),
-        markers=list(dict.fromkeys(label for label in labels if label)),
+        markers=list(dict.fromkeys(label for label in labels if label))
+        + await _behavior_markers(session, teen.id, today),
         notes=await _notes(session, case.id),
     )
 
@@ -431,6 +471,20 @@ async def add_follow_up(
     session.add(item)
     await session.commit()
     return _follow_up(item)
+
+
+@router.delete("/follow-ups/{follow_up_id}", status_code=204)
+async def delete_follow_up(
+    follow_up_id: uuid.UUID,
+    staff: User = Depends(current_staff),
+    session: AsyncSession = Depends(get_session),
+) -> None:
+    """Hanya agenda milik sendiri; milik staf lain = 404."""
+    item = await session.get(FollowUp, follow_up_id)
+    if item is None or item.staff_id != staff.id:
+        raise HTTPException(404, "Jadwal tidak ditemukan.")
+    await session.delete(item)
+    await session.commit()
 
 
 def _follow_up(f: FollowUp) -> FollowUpOut:

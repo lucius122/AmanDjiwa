@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Button } from '../../components/Button';
+import { Icon } from '../../components/Icon';
 import { useToast } from '../../components/Toast';
 import { copy } from '../../lib/copy';
 import { clockDot, fromWib, todayWib, weekdayShort } from '../../lib/time';
@@ -48,6 +49,14 @@ export function Schedule() {
     },
     onError: () => toast(t.failed),
   });
+  const remove = useMutation({
+    mutationFn: (id: string) => staffApi<void>(`/follow-ups/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['follow-ups'] });
+      toast(t.removed);
+    },
+    onError: () => toast(t.failed),
+  });
   const err = form.formState.errors;
 
   return (
@@ -61,13 +70,23 @@ export function Schedule() {
               <span className="text-11 font-bold text-teal-800">{weekdayShort(start)}</span>
               <span className="text-20 font-extrabold">{dayOfMonth(start)}</span>
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="flex min-w-0 flex-1 flex-col gap-2">
               <span className="text-15 font-bold">{j.title}</span>
               <span className="text-13 text-muted">
                 {clockDot(start)}
                 {j.ends_at ? ` – ${clockDot(new Date(j.ends_at))}` : ''}
               </span>
             </div>
+            {/* DESIGN-GAP: hapus jadwal tidak ada di desain. */}
+            <button
+              type="button"
+              aria-label={t.remove(j.title)}
+              disabled={remove.isPending}
+              onClick={() => remove.mutate(j.id)}
+              className="flex h-44 w-44 flex-none items-center justify-center rounded-12 bg-transparent hover:bg-cream"
+            >
+              <Icon name="trash" className="h-20 w-20 stroke-muted" />
+            </button>
           </div>
         );
       })}

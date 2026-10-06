@@ -74,3 +74,16 @@ trigger_labels:
   skrining: Skor skrining tinggi
   minta_dihubungkan: Minta dihubungkan ke pendamping
   jurnal: Terdeteksi dari jurnal (isi tetap privat)
+
+# Penanda perilaku di detail kasus (desain: "Aktif larut malam", "Jurnal berhenti 3 hari").
+# Dihitung dari 14 hari terakhir, hanya untuk staf; tidak ikut skor TER.
+# TODO_VERIFY: ambang perlu direview psikolog.
+behavior:
+  late_night:
+    label: Aktif larut malam
+    before_hour: 4 # pesan remaja pukul 00.00–03.59 WIB
+    min_nights: 2
+  journal_stopped:
+    label: Jurnal berhenti {n} hari
+    min_days: 3 # tidak mengisi jurnal ≥ 3 hari terakhir…
+    min_entries: 3 # …padahal sebelumnya cukup rutin
