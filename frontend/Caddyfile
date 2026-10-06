@@ -1,0 +1,27 @@
+# SITE_ADDRESS: domain publik (HTTPS otomatis, mis. amandjiwa.example.id) atau ":80" untuk HTTP lokal.
+# Tanpa direktif `log`: Caddy tidak menulis access log (path bisa memuat token persetujuan wali, §7).
+{$SITE_ADDRESS:localhost} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+
+	# API: /api/chat/message → backend /chat/message (satu origin, jadi tanpa CORS).
+	handle_path /api/* {
+		reverse_proxy backend:8000
+	}
+
+	# SPA: semua rute React (/ngobrol, /staf, /kota, …) jatuh ke index.html.
+	handle {
+		root * /srv
+		@assets path /assets/*
+		header @assets Cache-Control "public, max-age=31536000, immutable"
+		try_files {path} /index.html
+		file_server
+	}
+}

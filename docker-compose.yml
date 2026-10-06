@@ -1,0 +1,63 @@
+# Dev   : docker compose up -d                       → postgres, redis, mailpit (backend & vite jalan lokal)
+# Full  : docker compose --profile app up -d --build → + backend & caddy (frontend statis + /api)
+# Semua secret dari .env di root repo (lihat .env.example). Port DB/Redis hanya di 127.0.0.1.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: amandjiwa
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-amandjiwa}
+      POSTGRES_DB: amandjiwa
+    ports: ["127.0.0.1:5433:5432"] # 5432 sering sudah dipakai Postgres lokal
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "amandjiwa"]
+      interval: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports: ["127.0.0.1:6379:6379"]
+    restart: unless-stopped
+
+  # Penangkap email dev: email persetujuan ortu bisa dibuka di http://localhost:8025
+  mailpit:
+    image: axllent/mailpit
+    ports: ["127.0.0.1:1025:1025", "127.0.0.1:8025:8025"]
+
+  backend:
+    profiles: [app]
+    build: ./backend
+    env_file: .env
+    environment:
+      # Alamat layanan di jaringan compose (menimpa nilai localhost di .env untuk dev lokal).
+      DATABASE_URL: postgresql+asyncpg://amandjiwa:${POSTGRES_PASSWORD:-amandjiwa}@postgres:5432/amandjiwa
+      REDIS_URL: redis://redis:6379/0
+      SMTP_HOST: ${DOCKER_SMTP_HOST:-mailpit}
+      SMTP_PORT: ${DOCKER_SMTP_PORT:-1025}
+    volumes:
+      - ./ml/models:/srv/ml/models:ro # model ONNX (opsional); kosong = leksikon + skor kata kunci
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_started }
+    restart: unless-stopped
+
+  caddy:
+    profiles: [app]
+    build:
+      context: ./frontend
+      args:
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:-}
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-localhost}
+    ports: ["80:80", "443:443", "443:443/udp"]
+    volumes: [caddy_data:/data, caddy_config:/config]
+    depends_on: [backend]
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:
