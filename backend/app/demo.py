@@ -325,7 +325,7 @@ async def current_code(session: AsyncSession, role: Role) -> tuple[str, int]:
     if secret_enc is None:
         raise RuntimeError("Akun demo belum ada. Jalankan seed-demo dulu.")
     totp = pyotp.TOTP(decrypt(secret_enc))
-    return totp.now(), int(totp.interval - time.time() % totp.interval)
+    return totp.now(), totp.interval - int(time.time()) % totp.interval  # 1–30, tidak pernah 0
 
 
 async def reset(session: AsyncSession) -> int:
