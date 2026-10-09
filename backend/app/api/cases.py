@@ -378,7 +378,7 @@ async def update_case(
         log = LOG["contacted"]
     elif body.action == "done":
         if case.status != CaseStatus.ditangani:
-            raise HTTPException(409, "Hubungi remaja dulu sebelum menandai selesai.")
+            raise HTTPException(409, "Hubungi pengguna dulu sebelum menandai selesai.")
         case.status = CaseStatus.selesai
         log = LOG["done"]
     else:

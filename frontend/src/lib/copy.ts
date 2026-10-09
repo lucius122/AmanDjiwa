@@ -118,7 +118,7 @@ export const copy = {
   landing: {
     skip: 'Lewati ke konten utama', // aksesibilitas (tidak terlihat sampai difokus)
     nav: { how: 'Cara kerja', privacy: 'Privasi', help: 'Bantuan darurat', login: 'Masuk' },
-    badge: 'Untuk remaja Semarang, 13–19 tahun',
+    badge: 'Untuk warga Semarang, usia 13 tahun ke atas',
     title: 'Cerita aja, kamu nggak sendirian',
     lead: 'Djiwa siap dengerin kapan aja. Nggak ada yang nge-judge, dan kamu bisa pakai nama samaran.',
     cta: 'Mulai ngobrol',
@@ -174,6 +174,7 @@ export const copy = {
     kelSheetTitle: 'Pilih kelurahan',
     kelSheetSub: 'Kecamatan Semarang Barat',
     yearLabel: 'Tahun lahir',
+    yearPlaceholder: 'Pilih tahun lahir', // DESIGN-GAP: dropdown tahun (usia 13+)
     next: 'Lanjut',
     consentTitle: 'Sebelum mulai, ini janji kami',
     consent: [
@@ -220,7 +221,7 @@ export const copy = {
     title: 'Permohonan izin penggunaan layanan AmanDjiwa',
     lead: 'Bapak/Ibu yang kami hormati, putra/putri Anda telah mendaftar di AmanDjiwa dan memerlukan persetujuan Anda untuk melanjutkan.',
     terms: [
-      { title: 'Tentang layanan', body: 'AmanDjiwa adalah layanan skrining dini kesehatan mental bagi remaja Kota Semarang. Layanan ini bukan alat diagnosis medis.' },
+      { title: 'Tentang layanan', body: 'AmanDjiwa adalah layanan skrining dini kesehatan mental bagi warga Kota Semarang usia 13 tahun ke atas. Layanan ini bukan alat diagnosis medis.' },
       { title: 'Data yang dikumpulkan', body: 'Nama samaran, kelurahan, tahun lahir, isi percakapan, dan jurnal emosi. Seluruh data disimpan terenkripsi.' },
       { title: 'Kerahasiaan', body: 'Isi percakapan tidak dibagikan kepada orang tua maupun pihak sekolah. Pemerintah Kota hanya menerima data agregat tanpa identitas.' },
       {
@@ -438,8 +439,8 @@ export const copy = {
     // TODO_VERIFY: daftar tujuan rujukan resmi per kelurahan (dari desain, belum diverifikasi).
     targets: [
       { label: 'Puskesmas Krobokan', sub: 'Poli jiwa · Senin–Sabtu' },
-      { label: 'Psikolog mitra USM', sub: 'Konseling gratis untuk remaja' },
-      { label: 'Konselor BK sekolah', sub: 'Dengan persetujuan remaja' },
+      { label: 'Psikolog mitra USM', sub: 'Konseling gratis untuk pengguna' },
+      { label: 'Konselor BK sekolah', sub: 'Dengan persetujuan pengguna' },
     ],
   },
 
@@ -510,7 +511,7 @@ export const copy = {
   // ---------- dasbor kota (hanya agregat) ----------
   kota: {
     subtitle: 'Dasbor Kota · Kec. Semarang Barat',
-    title: 'Ringkasan kesehatan mental remaja',
+    title: 'Ringkasan kesehatan mental pengguna',
     ranges: [
       { label: '4 minggu', weeks: 4 },
       { label: '8 minggu', weeks: 8 },

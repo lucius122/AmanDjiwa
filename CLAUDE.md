@@ -6,6 +6,8 @@
 
 AmanDjiwa adalah sistem skrining dini risiko kesehatan mental untuk remaja (13–19 tahun) di Kecamatan Semarang Barat, untuk Hackathon USM Smart City Deeptech 2026. Chatbot-nya bernama **Djiwa** (Telegram: `@AmanDjiwa_bot` — handle asli dari BotFather, 2026-10-06; desain menulis `@AmanDjiwaBot`). *(Keputusan 2026-10-05: ikut desain, bukan "Ayem".)*
 
+*(Keputusan 2026-10-09: pendaftaran dibuka untuk usia **13 tahun ke atas** (13–100), bukan hanya remaja 13–19. Izin wali untuk < 18 tetap berlaku. Teks yang dilihat staf memakai kata "pengguna", bukan "remaja"; nama role internal tetap `remaja`.)*
+
 Sistem ini **alat bantu skrining, BUKAN alat diagnosis**. Keselamatan pengguna lebih penting daripada fitur, kecepatan, atau estetika.
 
 Pengguna dan peran (RBAC):
@@ -26,7 +28,7 @@ Pengguna dan peran (RBAC):
 - Kalau ada layar atau state yang tidak ada di `design/` (misalnya error, loading, atau empty state), turunkan dari komponen yang sudah ada dan beri catatan `// DESIGN-GAP:` supaya bisa direview.
 - Data dummy di HTML diganti dengan data dari API. Teks UI tetap Bahasa Indonesia, sapaan "kamu".
 - Warna level risiko (hijau/kuning/oranye/merah) **hanya** boleh muncul di dasbor pendamping/konselor/kota, **TIDAK PERNAH** di halaman yang dilihat remaja.
-- Penyimpangan desain yang sudah disetujui (2026-10-06): langkah 1 onboarding memakai email + password (bukan kode OTP + Google), ditambah halaman lupa/atur ulang password dan halaman "Akun staf" di dasbor kota. Di desktop, bilah header, area pesan, dan kolom ketik halaman Ngobrol dibuat selebar layar (isinya tetap kolom 820px) supaya bisa scroll dari mana saja. Di web, Ngobrol menampilkan popup wajib isi jurnal hari ini sebelum chat; tombol "Butuh bantuan sekarang" tetap ada di popup, dan popup tidak memblokir bila jurnal gagal dimuat atau remaja sudah minta pendamping. Halaman Jurnal menampilkan ringkasan jurnal hari ini dengan tombol Ubah (hanya hari ini; hari sebelumnya tidak bisa diubah).
+- Penyimpangan desain yang sudah disetujui (2026-10-06): langkah 1 onboarding memakai email + password (bukan kode OTP + Google), ditambah halaman lupa/atur ulang password dan halaman "Akun staf" di dasbor kota. Di desktop, bilah header, area pesan, dan kolom ketik halaman Ngobrol dibuat selebar layar (isinya tetap kolom 820px) supaya bisa scroll dari mana saja. Di web, Ngobrol menampilkan popup wajib isi jurnal hari ini sebelum chat; tombol "Butuh bantuan sekarang" tetap ada di popup, dan popup tidak memblokir bila jurnal gagal dimuat atau remaja sudah minta pendamping. Halaman Jurnal menampilkan ringkasan jurnal hari ini dengan tombol Ubah (hanya hari ini; hari sebelumnya tidak bisa diubah). Tahun lahir dipilih lewat dropdown (usia 13+), bukan 7 tombol tahun.
 - Penyimpangan desain yang sudah disetujui (2026-10-05): placeholder ilustrasi diganti ilustrasi SVG flat (warna token); placeholder logo mitra diganti nama organisasi sebagai teks sampai ada file logo resmi; landing ditambah satu CTA penutup sebelum footer.
 
 ## 3. Tech stack (FIXED — jangan diganti)

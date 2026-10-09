@@ -46,7 +46,8 @@ async def _guardian_token(
 
 @pytest.mark.parametrize(
     ("age", "status"),
-    [(16, "pending_guardian"), (18, "pending_guardian"), (19, "active")],  # 18: bisa jadi masih 17
+    # 18: bisa jadi masih 17. Usia 13 tahun ke atas (keputusan 2026-10-09), bukan hanya remaja.
+    [(13, "pending_guardian"), (18, "pending_guardian"), (19, "active"), (40, "active")],
 )
 async def test_assent_sets_guardian_requirement(client: AsyncClient, age: int, status: str) -> None:
     r = await client.post(
@@ -64,7 +65,7 @@ async def test_assent_sets_guardian_requirement(client: AsyncClient, age: int, s
         {"pseudonym": "08123456789"},
         {"pseudonym": "   "},
         {"birth_year": YEAR - 12},
-        {"birth_year": YEAR - 20},
+        {"birth_year": YEAR - 101},
         {"agree": False},
         {"avatar": 8},
         {"kelurahan_id": 999},

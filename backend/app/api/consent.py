@@ -67,10 +67,11 @@ class AssentIn(BaseModel):
 
     @field_validator("birth_year")
     @classmethod
-    def _age_13_to_19(cls, v: int) -> int:
+    def _age_13_plus(cls, v: int) -> int:
+        # Keputusan 2026-10-09: usia 13 tahun ke atas, bukan hanya remaja; 100 = batas wajar.
         year = date.today().year
-        if not year - 19 <= v <= year - 13:
-            raise ValueError("AmanDjiwa untuk remaja 13–19 tahun.")
+        if not year - 100 <= v <= year - 13:
+            raise ValueError("AmanDjiwa untuk usia 13 tahun ke atas.")
         return v
 
 

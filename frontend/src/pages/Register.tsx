@@ -21,7 +21,8 @@ interface Kelurahan {
 }
 
 const THIS_YEAR = new Date().getFullYear();
-const YEARS = Array.from({ length: 7 }, (_, i) => THIS_YEAR - 19 + i); // 13–19 tahun (desain: 2007–2013)
+// Usia 13–100 tahun, terbaru di atas; sama dengan backend (keputusan 2026-10-09, bukan hanya remaja).
+const YEARS = Array.from({ length: 88 }, (_, i) => THIS_YEAR - 13 - i);
 const CONTACT_LIKE = /@|\d{5,}/; // sama dengan validasi backend
 const emailOk = (v: string) => z.string().trim().email().safeParse(v).success;
 // Sama dengan backend (konservatif, hanya tahun lahir): mungkin < 18 → wajib izin wali.
@@ -193,24 +194,22 @@ export function Register() {
               <Icon name="chevronDown" className="h-20 w-20 stroke-navy" strokeWidth={2} />
             </button>
           </div>
-          <div className="flex flex-col gap-8">
-            <span className="text-14 font-semibold" id="ob-year">
-              {t.yearLabel}
-            </span>
-            <div className="flex flex-wrap gap-8" role="group" aria-labelledby="ob-year">
+          {/* DESIGN-GAP: desain memakai 7 tombol tahun (13–19 tahun); usia 13+ tidak muat → dropdown. */}
+          <label className="flex flex-col gap-6">
+            <span className="text-14 font-semibold">{t.yearLabel}</span>
+            <select
+              value={year ?? ''}
+              onChange={(e) => setYear(e.target.value ? Number(e.target.value) : null)}
+              className={`h-50 rounded-14 border-1.5 border-sand-400 bg-white px-14 text-16 ${year ? 'text-navy' : 'text-muted-placeholder'}`}
+            >
+              <option value="">{t.yearPlaceholder}</option>
               {YEARS.map((y) => (
-                <button
-                  key={y}
-                  type="button"
-                  aria-pressed={year === y}
-                  onClick={() => setYear(y)}
-                  className={`h-44 rounded-12 border-1.5 px-14 text-15 font-bold ${year === y ? 'border-teal-600 bg-teal-600 text-white' : 'border-sand-400 bg-white text-navy'}`}
-                >
+                <option key={y} value={y} className="text-navy">
                   {y}
-                </button>
+                </option>
               ))}
-            </div>
-          </div>
+            </select>
+          </label>
           <Button className="mt-auto" disabled={!profileReady || nickError} onClick={() => setStep('consent')}>
             {t.next}
           </Button>
